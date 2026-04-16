@@ -1,0 +1,35 @@
+visa transformable=>visa travailleur, etudiant,..
+visa long sejour
+
+Tokony fantatra hoe manana visa transformable
+
+Sprint 1: nouvelle demande (misy statut) => zany hoe av any izy manana visa transformable de rhf tonga eto de mangataka visa travailleur na etudiant,...,,,, ao amn ministre interieur no mangataka le visa ho travailleur.
+		appli qui a un formulaire hi-inserer-na anlay dossier amle demande,misy etat anle olona ect....
+	2 types : investisseur sy travailleur ihany.
+
+	saisi anle info no atao.
+
+Cas possibles:	
+	carte resident et visa no azo amn farany(mitovy ny info amreo)
+
+	raha very le carte resident d manao nouvelle demade ana duplicata anle carte resident.....Misy ko ny transfert de visa raha le passeport no very satria ao no mitomboka le visa.
+
+	miova le numero de passeport rhf manao duplicata na transfert de visa.
+
+	mety tsy ananana ny donnees anle olona nefa anao anle duplicata ou transfert de demande.=> de saisisse-na le donnee rhf tss info le olona.
+
+
+BO: spring-boot.mvc et FO: framework  
+
+
+ETAT CIVIL:
+
+nom,prenoms, nom de jeune fille, nee le,situation fam,nationalite 1 ihany,profession,adresse a Mcar,numero tel
+
+
+VISA transformable:
+ref visa,date d'entree a mcar,lieu d'entree a Mcar, date d'expiration, type de demande(nouveau titre),statut(travailleur ou investisseur)
+
+formulaire de saisi anle investisseur sy travailleur(coche)
+
+	

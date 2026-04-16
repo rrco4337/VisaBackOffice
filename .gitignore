@@ -1,0 +1,17 @@
+# Build output
+/target/
+
+# IDE files
+/.idea/
+/.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local Spring config with secrets
+src/main/resources/application.properties
