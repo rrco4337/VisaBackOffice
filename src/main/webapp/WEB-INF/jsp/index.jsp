@@ -1,64 +1,69 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<html>
-<head>
-    <title>Sprint 1 - Enregistrement Demande Visa</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 24px; background: #f5f7fb; }
-        .card { background: #fff; border-radius: 8px; padding: 18px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-        h2, h3 { margin-top: 0; }
-        .grid { display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 10px 14px; }
-        label { font-size: 12px; color: #333; display: block; margin-bottom: 4px; }
-        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
-        textarea { min-height: 60px; }
-        .row-full { grid-column: 1 / -1; }
-        .error { color: #8a1f11; background: #fde6e2; border: 1px solid #f3c8c0; padding: 8px; margin-bottom: 10px; }
-        .success { color: #165c2f; background: #e3f6e8; border: 1px solid #b5e1c2; padding: 8px; margin-bottom: 10px; }
-        .pieces { padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
-        .btn { margin-top: 12px; padding: 10px 14px; background: #0b63f3; color: white; border: 0; border-radius: 6px; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #d7deea; padding: 8px; text-align: left; }
-        th { background: #eef3fb; }
-    </style>
-</head>
-<body>
+<jsp:include page="layout/layout_header.jsp">
+    <jsp:param name="pageTitle" value="Dashboard" />
+</jsp:include>
 
-<div class="header">
-    <h2>Tableau de bord - Visa BackOffice</h2>
-    <a href="/demande" class="btn">Soumettre un nouveau dossier</a>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-3 mb-md-0 fs-5">Bienvenue sur le tableau de bord de gestion des visas.</p>
+    <a href="/demande" class="btn btn-primary btn-lg rounded-pill shadow-sm px-4">
+        <i class="bi bi-plus-lg me-2"></i> Soumettre un dossier
+    </a>
 </div>
 
 <c:if test="${not empty successMessage}">
-    <div class="success">${successMessage}</div>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+        <i class="bi bi-check-circle-fill me-2 fs-5 align-middle"></i> ${successMessage}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 </c:if>
 
-<div class="card">
-    <h3>Dernieres demandes</h3>
-    <table>
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Demandeur</th>
-            <th>Type demande</th>
-            <th>Profil</th>
-            <th>Statut</th>
-            <th>Date</th>
-        </tr>
-        </thead>
-        <tbody>
-        <c:forEach var="d" items="${demandesRecentes}">
-            <tr>
-                <td>${d.id}</td>
-                <td>${d.personne.nom} ${d.personne.prenom}</td>
-                <td>${d.typeDemande.libelle}</td>
-                <td>${d.typeProfil.libelle}</td>
-                <td>${d.statut}</td>
-                <td>${d.dateDemande}</td>
-            </tr>
-        </c:forEach>
-        </tbody>
-    </table>
+<div class="card card-custom mt-2">
+    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+        <h5 class="card-title fw-bold text-dark"><i class="bi bi-list-ul me-2 text-primary"></i> Dernières demandes</h5>
+    </div>
+    <div class="card-body px-4 pb-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-secondary">
+                <tr>
+                    <th class="rounded-start">ID</th>
+                    <th>Demandeur</th>
+                    <th>Type demande</th>
+                    <th>Profil</th>
+                    <th>Statut</th>
+                    <th class="rounded-end">Date</th>
+                </tr>
+                </thead>
+                <tbody class="border-top-0">
+                <c:forEach var="d" items="${demandesRecentes}">
+                    <tr>
+                        <td><span class="badge bg-secondary opacity-75 rounded-pill">#${d.id}</span></td>
+                        <td class="fw-medium text-dark">${d.personne.nom} ${d.personne.prenom}</td>
+                        <td class="text-secondary">${d.typeDemande.libelle}</td>
+                        <td><span class="badge bg-info text-dark rounded-pill shadow-sm">${d.typeProfil.libelle}</span></td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${d.statut.name() == 'ACTIF'}"><span class="badge bg-success rounded-pill shadow-sm">Actif</span></c:when>
+                                <c:when test="${d.statut.name() == 'CREER'}"><span class="badge bg-primary rounded-pill shadow-sm">Créé</span></c:when>
+                                <c:otherwise><span class="badge bg-secondary rounded-pill shadow-sm">${d.statut.name()}</span></c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td class="text-muted small">${d.dateDemande}</td>
+                    </tr>
+                </c:forEach>
+                <c:if test="${empty demandesRecentes}">
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-folder2-open fs-1 text-secondary opacity-50 d-block mb-3"></i>
+                            Aucune demande enregistrée.
+                        </td>
+                    </tr>
+                </c:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<jsp:include page="layout/layout_footer.jsp" />

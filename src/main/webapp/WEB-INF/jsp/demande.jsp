@@ -1,133 +1,168 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<html>
-<head>
-    <title>Sprint 1 - Soumission de Dossier</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 24px; background: #f5f7fb; }
-        .card { background: #fff; border-radius: 8px; padding: 18px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-        h2, h3 { margin-top: 0; }
-        .grid { display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 10px 14px; }
-        label { font-size: 12px; color: #333; display: block; margin-bottom: 4px; }
-        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
-        textarea { min-height: 60px; }
-        .row-full { grid-column: 1 / -1; }
-        .error { color: #8a1f11; background: #fde6e2; border: 1px solid #f3c8c0; padding: 8px; margin-bottom: 10px; }
-        .success { color: #165c2f; background: #e3f6e8; border: 1px solid #b5e1c2; padding: 8px; margin-bottom: 10px; }
-        .pieces { padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
-        .btn { margin-top: 12px; padding: 10px 14px; background: #0b63f3; color: white; border: 0; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-secondary { background: #6c757d; }
-        .btn-secondary:hover { background: #5a6268; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #d7deea; padding: 8px; text-align: left; }
-        th { background: #eef3fb; }
-        .header-actions { margin-bottom: 20px; }
-    </style>
-</head>
-<body>
+<jsp:include page="layout/layout_header.jsp">
+    <jsp:param name="pageTitle" value="Soumission" />
+</jsp:include>
 
-<div class="header-actions">
-    <a href="/" class="btn btn-secondary">&larr; Retour au Dashboard</a>
-</div>
-
-<div class="card">
-    <h2>Sprint 1 - Enregistrement d'une demande de transformation</h2>
-
-    <c:if test="${not empty errors}">
-        <div class="error">
-            <ul>
-                <c:forEach var="err" items="${errors}">
-                    <li>${err}</li>
-                </c:forEach>
-            </ul>
-        </div>
-    </c:if>
-
-    <form action="demandes/enregistrer" method="post">
-        <h3>1. Etat civil</h3>
-        <div class="grid">
-            <div><label>Nom</label><input type="text" name="nom" value="${form.nom}"/></div>
-            <div><label>Prenom</label><input type="text" name="prenom" value="${form.prenom}"/></div>
-            <div><label>Nom de jeune fille</label><input type="text" name="nomJeuneFille" value="${form.nomJeuneFille}"/></div>
-            <div><label>Nom du pere</label><input type="text" name="nomPere" value="${form.nomPere}"/></div>
-            <div><label>Date de naissance</label><input type="date" name="dateNaissance" value="${form.dateNaissance}"/></div>
-            <div>
-                <label>Situation familiale</label>
-                <select name="situationFamiliale">
-                    <option value="">-- Sélectionnez --</option>
-                    <c:forEach var="sf" items="${situationsFamiliales}">
-                        <option value="${sf.id}" ${form.situationFamiliale == sf.id ? 'selected="selected"' : ''}>${sf.libelle}</option>
-                    </c:forEach>
-                </select>
-            </div>
-            <div>
-                <label>Nationalite</label>
-                <select name="nationalite">
-                    <option value="">-- Sélectionnez --</option>
-                     <c:forEach var="nat" items="${nationalites}">
-                        <option value="${nat.id}" ${form.nationalite == nat.id ? 'selected="selected"' : ''}>${nat.libelle}</option>
-                    </c:forEach>
-                </select>
-            </div>
-            <div><label>Profession</label><input type="text" name="profession" value="${form.profession}"/></div>
-            <div class="row-full"><label>Adresse</label><textarea name="adresse">${form.adresse}</textarea></div>
-            <div><label>Email</label><input type="email" name="email" value="${form.email}"/></div>
-            <div><label>Telephone</label><input type="text" name="telephone" value="${form.telephone}"/></div>
-            <div><label>Numero de passeport</label><input type="text" name="numeroPasseport" value="${form.numeroPasseport}"/></div>
-            <div><label>Date de delivrance du passeport</label><input type="date" name="dateDelivrancePasseport" value="${form.dateDelivrancePasseport}"/></div>
-            <div><label>Date d'expiration du passeport</label><input type="date" name="dateExpirationPasseport" value="${form.dateExpirationPasseport}"/></div>
-        </div>
-
-        <h3>2. Visa transformable</h3>
-        <div class="grid">
-            <div><label>Numero visa</label><input type="text" name="numeroVisa" value="${form.numeroVisa}"/></div>
-            <div><label>Date d'entree (Ivato)</label><input type="date" name="dateEntree" value="${form.dateEntree}"/></div>
-            <div><label>Lieu d'entree</label><input type="text" name="lieuEntree" value="${form.lieuEntree}"/></div>
-            <div><label>Date d'expiration visa</label><input type="date" name="dateExpirationVisa" value="${form.dateExpirationVisa}"/></div>
-        </div>
-
-        <h3>3. Demande</h3>
-        <div class="grid">
-            <div>
-                <label>Type de titre demande</label>
-                <select name="typeDemande" id="typeDemande" onchange="window.location.href='/demande?typeDemande=' + this.value + '&typeProfil=' + document.getElementById('typeProfil').value">
-                    <c:forEach var="type" items="${typesDemande}">
-                        <option value="${type}" ${form.typeDemande == type ? 'selected="selected"' : ''}>${type}</option>
-                    </c:forEach>
-                </select>
-            </div>
-            <div>
-                <label>Type de profil</label>
-                <select name="typeProfil" id="typeProfil" onchange="window.location.href='/demande?typeDemande=' + document.getElementById('typeDemande').value + '&typeProfil=' + this.value">
-                    <c:forEach var="profil" items="${typesProfil}">
-                        <option value="${profil}" ${form.typeProfil == profil ? 'selected="selected"' : ''}>${profil}</option>
-                    </c:forEach>
-                </select>
-            </div>
-            <div class="row-full">
-                <label>
-                    <input type="checkbox" name="sansDonnees" ${form.sansDonnees ? 'checked="checked"' : ''} />
-                    Sans donnees (autorise pour duplicata et transfert)
-                </label>
-            </div>
-        </div>
-
-        <h3>4. Pieces justificatives (checklist)</h3>
-        <div class="pieces">
-            <c:forEach var="piece" items="${pieces}">
-                <label>
-                    <input type="checkbox" name="pieceIds" value="${piece.id}"
-                        ${form.pieceIds.contains(piece.id) ? 'checked="checked"' : ''}
-                    />
-                    ${piece.libelle}
-                    <c:if test="${piece.obligatoire}">(obligatoire)</c:if>
-                </label>
+<c:if test="${not empty errors}">
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
+        <h5 class="alert-heading text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Veuillez corriger les erreurs suivantes :</h5>
+        <hr class="border-danger opacity-25">
+        <ul class="mb-0">
+            <c:forEach var="err" items="${errors}">
+                <li>${err}</li>
             </c:forEach>
-        </div>
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</c:if>
 
-        <button class="btn" type="submit">Enregistrer la demande</button>
-    </form>
+<div class="card card-custom mt-2">
+    <div class="card-body p-4 p-md-5">
+        <form action="demandes/enregistrer" method="post">
+            
+            <h4 class="mb-4 text-primary fw-bold border-bottom pb-2"><i class="bi bi-person-vcard me-2"></i> 1. État civil</h4>
+            <div class="row g-3 mb-5">
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Nom</label>
+                    <input type="text" class="form-control bg-light border-0" name="nom" value="${form.nom}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Prénom</label>
+                    <input type="text" class="form-control bg-light border-0" name="prenom" value="${form.prenom}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Nom de jeune fille</label>
+                    <input type="text" class="form-control bg-light border-0" name="nomJeuneFille" value="${form.nomJeuneFille}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Nom du père</label>
+                    <input type="text" class="form-control bg-light border-0" name="nomPere" value="${form.nomPere}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Date de naissance</label>
+                    <input type="date" class="form-control bg-light border-0" name="dateNaissance" value="${form.dateNaissance}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Situation familiale</label>
+                    <select name="situationFamiliale" class="form-select bg-light border-0">
+                        <option value="">-- Sélectionnez --</option>
+                        <c:forEach var="sf" items="${situationsFamiliales}">
+                            <option value="${sf.id}" ${form.situationFamiliale == sf.id ? 'selected="selected"' : ''}>${sf.libelle}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Nationalité</label>
+                    <select name="nationalite" class="form-select bg-light border-0">
+                        <option value="">-- Sélectionnez --</option>
+                        <c:forEach var="nat" items="${nationalites}">
+                            <option value="${nat.id}" ${form.nationalite == nat.id ? 'selected="selected"' : ''}>${nat.libelle}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Profession</label>
+                    <input type="text" class="form-control bg-light border-0" name="profession" value="${form.profession}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-muted small fw-bold">Adresse</label>
+                    <textarea class="form-control bg-light border-0" name="adresse" rows="2">${form.adresse}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Email</label>
+                    <input type="email" class="form-control bg-light border-0" name="email" value="${form.email}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Téléphone</label>
+                    <input type="text" class="form-control bg-light border-0" name="telephone" value="${form.telephone}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">Numéro de passeport</label>
+                    <input type="text" class="form-control bg-light border-0" name="numeroPasseport" value="${form.numeroPasseport}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">Date de délivrance passeport</label>
+                    <input type="date" class="form-control bg-light border-0" name="dateDelivrancePasseport" value="${form.dateDelivrancePasseport}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold">Date d'expiration passeport</label>
+                    <input type="date" class="form-control bg-light border-0" name="dateExpirationPasseport" value="${form.dateExpirationPasseport}">
+                </div>
+            </div>
+
+            <h4 class="mb-4 text-primary fw-bold border-bottom pb-2"><i class="bi bi-passport me-2"></i> 2. Visa transformable</h4>
+            <div class="row g-3 mb-5">
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Numéro de visa</label>
+                    <input type="text" class="form-control bg-light border-0" name="numeroVisa" value="${form.numeroVisa}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Date d'entrée (Ivato)</label>
+                    <input type="date" class="form-control bg-light border-0" name="dateEntree" value="${form.dateEntree}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Lieu d'entrée</label>
+                    <input type="text" class="form-control bg-light border-0" name="lieuEntree" value="${form.lieuEntree}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Date d'expiration visa</label>
+                    <input type="date" class="form-control bg-light border-0" name="dateExpirationVisa" value="${form.dateExpirationVisa}">
+                </div>
+            </div>
+
+            <h4 class="mb-4 text-primary fw-bold border-bottom pb-2"><i class="bi bi-file-text me-2"></i> 3. Demande</h4>
+            <div class="row g-3 mb-5 align-items-center">
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Type de titre demandé</label>
+                    <select class="form-select bg-light border-0" name="typeDemande" id="typeDemande" onchange="window.location.href='/demande?typeDemande=' + this.value + '&typeProfil=' + document.getElementById('typeProfil').value">
+                        <c:forEach var="type" items="${typesDemande}">
+                            <option value="${type}" ${form.typeDemande == type ? 'selected="selected"' : ''}>${type}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-muted small fw-bold">Type de profil</label>
+                    <select class="form-select bg-light border-0" name="typeProfil" id="typeProfil" onchange="window.location.href='/demande?typeDemande=' + document.getElementById('typeDemande').value + '&typeProfil=' + this.value">
+                        <c:forEach var="profil" items="${typesProfil}">
+                            <option value="${profil}" ${form.typeProfil == profil ? 'selected="selected"' : ''}>${profil}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="col-12 mt-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="sansDonnees" name="sansDonnees" ${form.sansDonnees ? 'checked="checked"' : ''}>
+                        <label class="form-check-label text-dark" for="sansDonnees">Sans données (autorisé pour duplicata et transfert)</label>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mb-4 text-primary fw-bold border-bottom pb-2"><i class="bi bi-check2-square me-2"></i> 4. Pièces justificatives</h4>
+            <div class="p-4 bg-light rounded-3 mb-5">
+                <div class="row g-3">
+                    <c:forEach var="piece" items="${pieces}">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input shadow-sm" type="checkbox" name="pieceIds" value="${piece.id}" id="piece-${piece.id}"
+                                    ${form.pieceIds.contains(piece.id) ? 'checked="checked"' : ''}>
+                                <label class="form-check-label" for="piece-${piece.id}">
+                                    ${piece.libelle}
+                                    <c:if test="${piece.obligatoire}">
+                                        <span class="badge bg-danger rounded-pill ms-2">Obligatoire</span>
+                                    </c:if>
+                                </label>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <a href="/" class="btn btn-outline-secondary rounded-pill px-4">Annuler</a>
+                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fs-5"><i class="bi bi-send-fill me-2"></i> Enregistrer la demande</button>
+            </div>
+        </form>
+    </div>
 </div>
 
-</body>
-</html>
+<jsp:include page="layout/layout_footer.jsp" />
