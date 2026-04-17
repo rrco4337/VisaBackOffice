@@ -22,10 +22,14 @@ public class Demandeur {
     @Column(name = "date_naissance")
     private LocalDate dateNaissance;
 
-    @Column(name = "situation_familiale")
-    private String situationFamiliale;
+    @ManyToOne
+    @JoinColumn(name = "situation_familiale_id")
+    private SituationFamiliale situationFamiliale;
 
-    private String nationalite;
+    @ManyToOne
+    @JoinColumn(name = "nationalite_id")
+    private Nationalite nationalite;
+    
     private String profession;
 
     @Column(columnDefinition = "TEXT")
@@ -45,10 +49,10 @@ public class Demandeur {
     public void setNomPere(String nomPere) { this.nomPere = nomPere; }
     public LocalDate getDateNaissance() { return dateNaissance; }
     public void setDateNaissance(LocalDate dateNaissance) { this.dateNaissance = dateNaissance; }
-    public String getSituationFamiliale() { return situationFamiliale; }
-    public void setSituationFamiliale(String situationFamiliale) { this.situationFamiliale = situationFamiliale; }
-    public String getNationalite() { return nationalite; }
-    public void setNationalite(String nationalite) { this.nationalite = nationalite; }
+    public SituationFamiliale getSituationFamiliale() { return situationFamiliale; }
+    public void setSituationFamiliale(SituationFamiliale situationFamiliale) { this.situationFamiliale = situationFamiliale; }
+    public Nationalite getNationalite() { return nationalite; }
+    public void setNationalite(Nationalite nationalite) { this.nationalite = nationalite; }
     public String getProfession() { return profession; }
     public void setProfession(String profession) { this.profession = profession; }
     public String getAdresse() { return adresse; }

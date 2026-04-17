@@ -30,6 +30,8 @@ public class EnregistrementDemandeService {
     private final TypeProfilRepository typeProfilRepository;
     private final TypeVisaRepository typeVisaRepository;
     private final PieceJustificativeRepository pieceJustificativeRepository;
+    private final NationaliteRepository nationaliteRepository;
+    private final SituationFamilialeRepository situationFamilialeRepository;
 
     public EnregistrementDemandeService(
             DemandeurRepository demandeurRepository,
@@ -40,7 +42,9 @@ public class EnregistrementDemandeService {
             TypeDemandeRepository typeDemandeRepository,
             TypeProfilRepository typeProfilRepository,
             TypeVisaRepository typeVisaRepository,
-            PieceJustificativeRepository pieceJustificativeRepository
+            PieceJustificativeRepository pieceJustificativeRepository,
+            NationaliteRepository nationaliteRepository,
+            SituationFamilialeRepository situationFamilialeRepository
     ) {
         this.demandeurRepository = demandeurRepository;
         this.passeportRepository = passeportRepository;
@@ -51,6 +55,8 @@ public class EnregistrementDemandeService {
         this.typeProfilRepository = typeProfilRepository;
         this.typeVisaRepository = typeVisaRepository;
         this.pieceJustificativeRepository = pieceJustificativeRepository;
+        this.nationaliteRepository = nationaliteRepository;
+        this.situationFamilialeRepository = situationFamilialeRepository;
     }
 
     public ValidationResult validate(EnregistrementDemandeForm form) {
@@ -104,8 +110,8 @@ public class EnregistrementDemandeService {
         demandeur.setNomJeuneFille(form.getNomJeuneFille());
         demandeur.setNomPere(form.getNomPere());
         demandeur.setDateNaissance(form.getDateNaissance());
-        demandeur.setSituationFamiliale(form.getSituationFamiliale());
-        demandeur.setNationalite(form.getNationalite());
+        demandeur.setSituationFamiliale(form.getSituationFamiliale() != null ? situationFamilialeRepository.findById(form.getSituationFamiliale()).orElse(null) : null);
+        demandeur.setNationalite(form.getNationalite() != null ? nationaliteRepository.findById(form.getNationalite()).orElse(null) : null);
         demandeur.setProfession(form.getProfession());
         demandeur.setAdresse(form.getAdresse());
         demandeur.setEmail(form.getEmail());
@@ -179,8 +185,8 @@ public class EnregistrementDemandeService {
         if (isBlank(form.getNom())) result.addError("Le nom est obligatoire.");
         if (isBlank(form.getPrenom())) result.addError("Le prenom est obligatoire.");
         if (form.getDateNaissance() == null) result.addError("La date de naissance est obligatoire.");
-        if (isBlank(form.getSituationFamiliale())) result.addError("La situation familiale est obligatoire.");
-        if (isBlank(form.getNationalite())) result.addError("La nationalite est obligatoire.");
+        if (form.getSituationFamiliale() == null) result.addError("La situation familiale est obligatoire.");
+        if (form.getNationalite() == null) result.addError("La nationalite est obligatoire.");
         if (isBlank(form.getProfession())) result.addError("La profession est obligatoire.");
         if (isBlank(form.getAdresse())) result.addError("L'adresse est obligatoire.");
         if (isBlank(form.getEmail())) result.addError("L'email est obligatoire.");

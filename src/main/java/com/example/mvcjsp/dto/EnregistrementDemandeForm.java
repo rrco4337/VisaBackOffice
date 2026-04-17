@@ -17,8 +17,8 @@ public class EnregistrementDemandeForm {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateNaissance;
 
-    private String situationFamiliale;
-    private String nationalite;
+    private Long situationFamiliale;
+    private Long nationalite;
     private String profession;
     private String adresse;
     private String email;
@@ -57,10 +57,10 @@ public class EnregistrementDemandeForm {
     public void setNomPere(String nomPere) { this.nomPere = nomPere; }
     public LocalDate getDateNaissance() { return dateNaissance; }
     public void setDateNaissance(LocalDate dateNaissance) { this.dateNaissance = dateNaissance; }
-    public String getSituationFamiliale() { return situationFamiliale; }
-    public void setSituationFamiliale(String situationFamiliale) { this.situationFamiliale = situationFamiliale; }
-    public String getNationalite() { return nationalite; }
-    public void setNationalite(String nationalite) { this.nationalite = nationalite; }
+    public Long getSituationFamiliale() { return situationFamiliale; }
+    public void setSituationFamiliale(Long situationFamiliale) { this.situationFamiliale = situationFamiliale; }
+    public Long getNationalite() { return nationalite; }
+    public void setNationalite(Long nationalite) { this.nationalite = nationalite; }
     public String getProfession() { return profession; }
     public void setProfession(String profession) { this.profession = profession; }
     public String getAdresse() { return adresse; }

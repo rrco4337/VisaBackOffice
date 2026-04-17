@@ -11,6 +11,8 @@ import com.example.mvcjsp.repository.PieceJustificativeRepository;
 import com.example.mvcjsp.repository.TypeDemandeRepository;
 import com.example.mvcjsp.repository.TypeProfilRepository;
 import com.example.mvcjsp.repository.TypeVisaRepository;
+import com.example.mvcjsp.repository.NationaliteRepository;
+import com.example.mvcjsp.repository.SituationFamilialeRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,17 +27,23 @@ public class DataInitializer implements CommandLineRunner {
     private final TypeDemandeRepository typeDemandeRepository;
     private final TypeProfilRepository typeProfilRepository;
     private final PieceJustificativeRepository pieceJustificativeRepository;
+    private final NationaliteRepository nationaliteRepository;
+    private final SituationFamilialeRepository situationFamilialeRepository;
 
     public DataInitializer(
             TypeVisaRepository typeVisaRepository,
             TypeDemandeRepository typeDemandeRepository,
             TypeProfilRepository typeProfilRepository,
-            PieceJustificativeRepository pieceJustificativeRepository
+            PieceJustificativeRepository pieceJustificativeRepository,
+            NationaliteRepository nationaliteRepository,
+            SituationFamilialeRepository situationFamilialeRepository
     ) {
         this.typeVisaRepository = typeVisaRepository;
         this.typeDemandeRepository = typeDemandeRepository;
         this.typeProfilRepository = typeProfilRepository;
         this.pieceJustificativeRepository = pieceJustificativeRepository;
+        this.nationaliteRepository = nationaliteRepository;
+        this.situationFamilialeRepository = situationFamilialeRepository;
     }
 
     @Override
@@ -76,6 +84,22 @@ public class DataInitializer implements CommandLineRunner {
 
         if (pieceJustificativeRepository.count() == 0) {
             seedPieces();
+        }
+
+        if (nationaliteRepository.count() == 0) {
+            Arrays.asList("Malagasy", "Française", "Américaine", "Canadienne", "Italienne").forEach(n -> {
+                com.example.mvcjsp.model.Nationalite nat = new com.example.mvcjsp.model.Nationalite();
+                nat.setLibelle(n);
+                nationaliteRepository.save(nat);
+            });
+        }
+
+        if (situationFamilialeRepository.count() == 0) {
+            Arrays.asList("Célibataire", "Marié(e)", "Divorcé(e)", "Veuf/Veuve").forEach(s -> {
+                com.example.mvcjsp.model.SituationFamiliale sf = new com.example.mvcjsp.model.SituationFamiliale();
+                sf.setLibelle(s);
+                situationFamilialeRepository.save(sf);
+            });
         }
     }
 

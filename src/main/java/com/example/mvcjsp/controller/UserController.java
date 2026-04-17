@@ -4,6 +4,8 @@ import com.example.mvcjsp.dto.EnregistrementDemandeForm;
 import com.example.mvcjsp.dto.ValidationResult;
 import com.example.mvcjsp.model.enums.DemandeTypeCode;
 import com.example.mvcjsp.model.enums.ProfilTypeCode;
+import com.example.mvcjsp.repository.NationaliteRepository;
+import com.example.mvcjsp.repository.SituationFamilialeRepository;
 import com.example.mvcjsp.service.EnregistrementDemandeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,13 +18,27 @@ import java.util.List;
 public class UserController {
 
     private final EnregistrementDemandeService enregistrementDemandeService;
+    private final NationaliteRepository nationaliteRepository;
+    private final SituationFamilialeRepository situationFamilialeRepository;
 
-    public UserController(EnregistrementDemandeService enregistrementDemandeService){
+    public UserController(
+            EnregistrementDemandeService enregistrementDemandeService,
+            NationaliteRepository nationaliteRepository,
+            SituationFamilialeRepository situationFamilialeRepository
+    ){
         this.enregistrementDemandeService = enregistrementDemandeService;
+        this.nationaliteRepository = nationaliteRepository;
+        this.situationFamilialeRepository = situationFamilialeRepository;
     }
 
     @GetMapping("/")
     public String home(Model model){
+        model.addAttribute("demandesRecentes", enregistrementDemandeService.recentes());
+        return "index";
+    }
+
+    @GetMapping("/demande")
+    public String preparationDemande(Model model) {
         if (!model.containsAttribute("form")) {
             EnregistrementDemandeForm form = new EnregistrementDemandeForm();
             form.setTypeDemande(DemandeTypeCode.NOUVEAU_TITRE);
@@ -40,13 +56,14 @@ public class UserController {
         model.addAttribute("typesDemande", DemandeTypeCode.values());
         model.addAttribute("typesProfil", ProfilTypeCode.values());
         model.addAttribute("pieces", enregistrementDemandeService.piecesPour(currentForm.getTypeDemande(), currentForm.getTypeProfil()));
-        model.addAttribute("demandesRecentes", enregistrementDemandeService.recentes());
+        model.addAttribute("nationalites", nationaliteRepository.findAll());
+        model.addAttribute("situationsFamiliales", situationFamilialeRepository.findAll());
 
         if (!model.containsAttribute("errors")) {
             model.addAttribute("errors", List.of());
         }
 
-        return "index";
+        return "demande";
     }
 
     @PostMapping("/demandes/enregistrer")
@@ -56,7 +73,7 @@ public class UserController {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("errors", result.getErrors());
             redirectAttributes.addFlashAttribute("form", form);
-            return "redirect:/";
+            return "redirect:/demande";
         }
 
         enregistrementDemandeService.enregistrer(form);
