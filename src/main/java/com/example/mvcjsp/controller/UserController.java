@@ -1,30 +1,83 @@
 package com.example.mvcjsp.controller;
 
-import com.example.mvcjsp.model.User;
-import com.example.mvcjsp.repository.UserRepository;
+import com.example.mvcjsp.dto.EnregistrementDemandeForm;
+import com.example.mvcjsp.dto.ValidationResult;
+import com.example.mvcjsp.model.enums.DemandeTypeCode;
+import com.example.mvcjsp.model.enums.ProfilTypeCode;
+import com.example.mvcjsp.repository.NationaliteRepository;
+import com.example.mvcjsp.repository.SituationFamilialeRepository;
+import com.example.mvcjsp.service.EnregistrementDemandeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 public class UserController {
 
-    private final UserRepository repo;
+    private final EnregistrementDemandeService enregistrementDemandeService;
+    private final NationaliteRepository nationaliteRepository;
+    private final SituationFamilialeRepository situationFamilialeRepository;
 
-    public UserController(UserRepository repo){
-        this.repo = repo;
+    public UserController(
+            EnregistrementDemandeService enregistrementDemandeService,
+            NationaliteRepository nationaliteRepository,
+            SituationFamilialeRepository situationFamilialeRepository
+    ){
+        this.enregistrementDemandeService = enregistrementDemandeService;
+        this.nationaliteRepository = nationaliteRepository;
+        this.situationFamilialeRepository = situationFamilialeRepository;
     }
 
     @GetMapping("/")
     public String home(Model model){
-        model.addAttribute("users", repo.findAll());
-        model.addAttribute("user", new User());
+        model.addAttribute("demandesRecentes", enregistrementDemandeService.recentes());
         return "index";
     }
 
-    @PostMapping("/add")
-    public String add(User user){
-        repo.save(user);
+    @GetMapping("/demande")
+    public String preparationDemande(Model model) {
+        if (!model.containsAttribute("form")) {
+            EnregistrementDemandeForm form = new EnregistrementDemandeForm();
+            form.setTypeDemande(DemandeTypeCode.NOUVEAU_TITRE);
+            form.setTypeProfil(ProfilTypeCode.ETUDIANT);
+            model.addAttribute("form", form);
+        }
+
+        EnregistrementDemandeForm currentForm = (EnregistrementDemandeForm) model.getAttribute("form");
+        if (currentForm == null) {
+            currentForm = new EnregistrementDemandeForm();
+            currentForm.setTypeDemande(DemandeTypeCode.NOUVEAU_TITRE);
+            currentForm.setTypeProfil(ProfilTypeCode.ETUDIANT);
+            model.addAttribute("form", currentForm);
+        }
+        model.addAttribute("typesDemande", DemandeTypeCode.values());
+        model.addAttribute("typesProfil", ProfilTypeCode.values());
+        model.addAttribute("pieces", enregistrementDemandeService.piecesPour(currentForm.getTypeDemande(), currentForm.getTypeProfil()));
+        model.addAttribute("nationalites", nationaliteRepository.findAll());
+        model.addAttribute("situationsFamiliales", situationFamilialeRepository.findAll());
+
+        if (!model.containsAttribute("errors")) {
+            model.addAttribute("errors", List.of());
+        }
+
+        return "demande";
+    }
+
+    @PostMapping("/demandes/enregistrer")
+    public String enregistrer(@ModelAttribute("form") EnregistrementDemandeForm form, RedirectAttributes redirectAttributes){
+        ValidationResult result = enregistrementDemandeService.validate(form);
+
+        if (result.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errors", result.getErrors());
+            redirectAttributes.addFlashAttribute("form", form);
+            return "redirect:/demande";
+        }
+
+        enregistrementDemandeService.enregistrer(form);
+        redirectAttributes.addFlashAttribute("successMessage", "Demande enregistree avec statut CREER.");
         return "redirect:/";
     }
 }

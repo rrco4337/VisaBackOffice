@@ -1,3 +1,15 @@
+-- TABLE situation_familiale
+CREATE TABLE situation_familiale (
+    id SERIAL PRIMARY KEY,
+    libelle VARCHAR
+);
+
+-- TABLE nationalite
+CREATE TABLE nationalite (
+    id SERIAL PRIMARY KEY,
+    libelle VARCHAR
+);
+
 -- TABLE demandeur
 CREATE TABLE demandeur (
     id SERIAL PRIMARY KEY,
@@ -6,8 +18,8 @@ CREATE TABLE demandeur (
     nom_jeune_fille VARCHAR,
     nom_pere VARCHAR,
     date_naissance DATE,
-    situation_familiale VARCHAR,
-    nationalite VARCHAR,
+    situation_familiale_id INTEGER REFERENCES situation_familiale(id),
+    nationalite_id INTEGER REFERENCES nationalite(id),
     profession VARCHAR,
     adresse TEXT,
     email VARCHAR,
