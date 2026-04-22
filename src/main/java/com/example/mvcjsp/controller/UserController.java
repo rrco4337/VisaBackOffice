@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.mvcjsp.model.Demande;
 
 import java.util.List;
 
@@ -38,19 +39,24 @@ public class UserController {
     }
 
     @GetMapping("/demande")
-    public String preparationDemande(Model model) {
+    public String preparationDemande(@RequestParam(required = false) String typeDemande,
+                                     @RequestParam(required = false) String typeProfil,
+                                     @RequestParam(required = false) Long personneId,
+                                     Model model) {
         if (!model.containsAttribute("form")) {
             EnregistrementDemandeForm form = new EnregistrementDemandeForm();
-            form.setTypeDemande(DemandeTypeCode.NOUVEAU_TITRE);
-            form.setTypeProfil(ProfilTypeCode.ETUDIANT);
+            form.setTypeDemande(typeDemande != null ? DemandeTypeCode.valueOf(typeDemande) : DemandeTypeCode.NOUVEAU_TITRE);
+            form.setTypeProfil(typeProfil != null ? ProfilTypeCode.valueOf(typeProfil) : ProfilTypeCode.ETUDIANT);
+            form.setPersonneId(personneId);
             model.addAttribute("form", form);
         }
 
         EnregistrementDemandeForm currentForm = (EnregistrementDemandeForm) model.getAttribute("form");
         if (currentForm == null) {
             currentForm = new EnregistrementDemandeForm();
-            currentForm.setTypeDemande(DemandeTypeCode.NOUVEAU_TITRE);
-            currentForm.setTypeProfil(ProfilTypeCode.ETUDIANT);
+            currentForm.setTypeDemande(typeDemande != null ? DemandeTypeCode.valueOf(typeDemande) : DemandeTypeCode.NOUVEAU_TITRE);
+            currentForm.setTypeProfil(typeProfil != null ? ProfilTypeCode.valueOf(typeProfil) : ProfilTypeCode.ETUDIANT);
+            currentForm.setPersonneId(personneId);
             model.addAttribute("form", currentForm);
         }
         model.addAttribute("typesDemande", DemandeTypeCode.values());
@@ -66,6 +72,18 @@ public class UserController {
         return "demande";
     }
 
+    @GetMapping("/demande/search")
+    public String searchDemande(@RequestParam("numeroPasseport") String numeroPasseport, RedirectAttributes redirectAttributes) {
+        EnregistrementDemandeForm form = enregistrementDemandeService.preparerFormulaireDepuisPasseport(numeroPasseport);
+        if (form.getNom() == null) {
+            redirectAttributes.addFlashAttribute("errors", List.of("Aucun dossier trouvé pour le passeport : " + numeroPasseport));
+        } else {
+            redirectAttributes.addFlashAttribute("successMessage", "Données pré-remplies pour le passeport : " + numeroPasseport);
+            redirectAttributes.addFlashAttribute("form", form);
+        }
+        return "redirect:/demande";
+    }
+
     @PostMapping("/demandes/enregistrer")
     public String enregistrer(@ModelAttribute("form") EnregistrementDemandeForm form, RedirectAttributes redirectAttributes){
         ValidationResult result = enregistrementDemandeService.validate(form);
@@ -76,8 +94,8 @@ public class UserController {
             return "redirect:/demande";
         }
 
-        enregistrementDemandeService.enregistrer(form);
-        redirectAttributes.addFlashAttribute("successMessage", "Demande enregistree avec statut CREER.");
+        Demande demande = enregistrementDemandeService.enregistrer(form);
+        redirectAttributes.addFlashAttribute("successMessage", "Demande enregistree avec statut " + demande.getStatut() + ".");
         return "redirect:/";
     }
 }

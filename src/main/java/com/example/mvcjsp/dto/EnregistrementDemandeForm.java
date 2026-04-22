@@ -13,6 +13,7 @@ public class EnregistrementDemandeForm {
     private String prenom;
     private String nomJeuneFille;
     private String nomPere;
+    private Long personneId;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateNaissance;
@@ -55,6 +56,8 @@ public class EnregistrementDemandeForm {
     public void setNomJeuneFille(String nomJeuneFille) { this.nomJeuneFille = nomJeuneFille; }
     public String getNomPere() { return nomPere; }
     public void setNomPere(String nomPere) { this.nomPere = nomPere; }
+    public Long getPersonneId() { return personneId; }
+    public void setPersonneId(Long personneId) { this.personneId = personneId; }
     public LocalDate getDateNaissance() { return dateNaissance; }
     public void setDateNaissance(LocalDate dateNaissance) { this.dateNaissance = dateNaissance; }
     public Long getSituationFamiliale() { return situationFamiliale; }

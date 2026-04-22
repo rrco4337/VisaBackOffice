@@ -104,7 +104,12 @@ public class EnregistrementDemandeService {
         TypeVisa typeVisa = typeVisaRepository.findByLibelle(VisaTypeCode.VISA_TRANSFORMABLE)
                 .orElseThrow(() -> new BusinessException("Type de visa transformable introuvable."));
 
-        Demandeur demandeur = new Demandeur();
+        Demandeur demandeur;
+        if (form.getPersonneId() != null) {
+            demandeur = demandeurRepository.findById(form.getPersonneId()).orElse(new Demandeur());
+        } else {
+            demandeur = new Demandeur();
+        }
         demandeur.setNom(form.getNom());
         demandeur.setPrenom(form.getPrenom());
         demandeur.setNomJeuneFille(form.getNomJeuneFille());
@@ -118,7 +123,7 @@ public class EnregistrementDemandeService {
         demandeur.setTelephone(form.getTelephone());
         demandeur = demandeurRepository.save(demandeur);
 
-        Passeport passeport = new Passeport();
+        Passeport passeport = passeportRepository.findByNumero(form.getNumeroPasseport()).orElse(new Passeport());
         passeport.setPersonne(demandeur);
         passeport.setNumero(form.getNumeroPasseport());
         passeport.setDateDelivrance(form.getDateDelivrancePasseport());
@@ -126,7 +131,13 @@ public class EnregistrementDemandeService {
         passeport.setEstActif(true);
         passeport = passeportRepository.save(passeport);
 
-        Visa visa = new Visa();
+        Visa visa = null;
+        if (passeport.getId() != null) {
+            visa = visaRepository.findFirstByPasseportOrderByDateExpirationDesc(passeport).orElse(null);
+        }
+        if (visa == null) {
+            visa = new Visa();
+        }
         visa.setPasseport(passeport);
         visa.setTypeVisa(typeVisa);
         visa.setNumeroVisa(form.getNumeroVisa());
@@ -137,13 +148,21 @@ public class EnregistrementDemandeService {
         visa.setStatut("ACTIF");
         visa = visaRepository.save(visa);
 
+        DemandeStatus statut = DemandeStatus.CREER;
+        if (form.isSansDonnees() && 
+            (form.getTypeDemande() == DemandeTypeCode.DUPLICATA || 
+             form.getTypeDemande() == DemandeTypeCode.TRANSFERT_VISA ||
+             form.getTypeDemande() == DemandeTypeCode.TRANSFERT_VISA_CARTE_RESIDENT)) {
+            statut = DemandeStatus.APPROUVEE;
+        }
+
         Demande demande = new Demande();
         demande.setPersonne(demandeur);
         demande.setVisa(visa);
         demande.setTypeDemande(typeDemande);
         demande.setTypeProfil(typeProfil);
         demande.setSansDonnees(form.isSansDonnees());
-        demande.setStatut(DemandeStatus.CREER);
+        demande.setStatut(statut);
         demande.setDateDemande(LocalDateTime.now());
         demande = demandeRepository.save(demande);
 
@@ -179,6 +198,39 @@ public class EnregistrementDemandeService {
                 .orElseThrow(() -> new BusinessException("Type de profil inconnu."));
 
         return pieceJustificativeRepository.findByTypeDemandeAndTypeProfilOrderByIdAsc(typeDemande, typeProfil);
+    }
+
+    public EnregistrementDemandeForm preparerFormulaireDepuisPasseport(String numeroPasseport) {
+        EnregistrementDemandeForm form = new EnregistrementDemandeForm();
+        passeportRepository.findByNumero(numeroPasseport).ifPresent(passeport -> {
+            Demandeur d = passeport.getPersonne();
+            if (d != null) {
+                form.setPersonneId(d.getId());
+                form.setNom(d.getNom());
+                form.setPrenom(d.getPrenom());
+                form.setNomJeuneFille(d.getNomJeuneFille());
+                form.setNomPere(d.getNomPere());
+                form.setDateNaissance(d.getDateNaissance());
+                if (d.getSituationFamiliale() != null) form.setSituationFamiliale(d.getSituationFamiliale().getId());
+                if (d.getNationalite() != null) form.setNationalite(d.getNationalite().getId());
+                form.setProfession(d.getProfession());
+                form.setAdresse(d.getAdresse());
+                form.setEmail(d.getEmail());
+                form.setTelephone(d.getTelephone());
+            }
+            
+            form.setNumeroPasseport(passeport.getNumero());
+            form.setDateDelivrancePasseport(passeport.getDateDelivrance());
+            form.setDateExpirationPasseport(passeport.getDateExpiration());
+            
+            visaRepository.findFirstByPasseportOrderByDateExpirationDesc(passeport).ifPresent(visa -> {
+                form.setNumeroVisa(visa.getNumeroVisa());
+                form.setDateEntree(visa.getDateEntree());
+                form.setLieuEntree(visa.getLieuEntree());
+                form.setDateExpirationVisa(visa.getDateExpiration());
+            });
+        });
+        return form;
     }
 
     private void validateCivilState(EnregistrementDemandeForm form, ValidationResult result) {

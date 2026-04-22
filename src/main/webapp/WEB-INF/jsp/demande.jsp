@@ -17,9 +17,32 @@
     </div>
 </c:if>
 
+<c:if test="${not empty successMessage}">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+        <h5 class="alert-heading text-success fw-bold"><i class="bi bi-check-circle-fill me-2"></i> Succès</h5>
+        <hr class="border-success opacity-25">
+        <p class="mb-0">${successMessage}</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</c:if>
+
+<div class="card card-custom mb-3">
+    <div class="card-body">
+        <form action="/demande/search" method="get">
+            <label class="form-label text-muted small fw-bold">Rechercher une personne existante (Pré-remplissage)</label>
+            <div class="input-group">
+                <input type="text" class="form-control" name="numeroPasseport" placeholder="Entrez le numéro de passeport existant..." required>
+                <button class="btn btn-secondary" type="submit"><i class="bi bi-search me-2"></i> Rechercher / Pré-remplir</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
 <div class="card card-custom mt-2">
     <div class="card-body p-4 p-md-5">
         <form action="demandes/enregistrer" method="post">
+            <input type="hidden" name="personneId" value="${form.personneId}">
             
             <h4 class="mb-4 text-primary fw-bold border-bottom pb-2"><i class="bi bi-person-vcard me-2"></i> 1. État civil</h4>
             <div class="row g-3 mb-5">
@@ -115,7 +138,7 @@
             <div class="row g-3 mb-5 align-items-center">
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">Type de titre demandé</label>
-                    <select class="form-select bg-light border-0" name="typeDemande" id="typeDemande" onchange="window.location.href='/demande?typeDemande=' + this.value + '&typeProfil=' + document.getElementById('typeProfil').value">
+                    <select class="form-select bg-light border-0" name="typeDemande" id="typeDemande" onchange="let url='/demande?typeDemande=' + this.value + '&typeProfil=' + document.getElementById('typeProfil').value; if(document.getElementById('personneId').value) url += '&personneId=' + document.getElementById('personneId').value; window.location.href=url">
                         <c:forEach var="type" items="${typesDemande}">
                             <option value="${type}" ${form.typeDemande == type ? 'selected="selected"' : ''}>${type}</option>
                         </c:forEach>
@@ -123,7 +146,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">Type de profil</label>
-                    <select class="form-select bg-light border-0" name="typeProfil" id="typeProfil" onchange="window.location.href='/demande?typeDemande=' + document.getElementById('typeDemande').value + '&typeProfil=' + this.value">
+                    <select class="form-select bg-light border-0" name="typeProfil" id="typeProfil" onchange="let url='/demande?typeDemande=' + document.getElementById('typeDemande').value + '&typeProfil=' + this.value; if(document.getElementById('personneId').value) url += '&personneId=' + document.getElementById('personneId').value; window.location.href=url">
                         <c:forEach var="profil" items="${typesProfil}">
                             <option value="${profil}" ${form.typeProfil == profil ? 'selected="selected"' : ''}>${profil}</option>
                         </c:forEach>
