@@ -32,4 +32,15 @@ ref visa,date d'entree a mcar,lieu d'entree a Mcar, date d'expiration, type de d
 
 formulaire de saisi anle investisseur sy travailleur(coche)
 
+
+# 1. Arrêter l'application (Ctrl+C dans le terminal où e
+apple@appledeMacBook-Pro VisaBackOffice % # 1. Arrêter l'application (Ctrl+C dans le terminal où elle tourne)
+
+# 2. Exécuter le reset corrigé
+psql -h localhost -U cindy -d visa -f bd/reset.sql
+
+# 3. Redémarrer l'application
+mvn spring-boot:run
+
+
 	
