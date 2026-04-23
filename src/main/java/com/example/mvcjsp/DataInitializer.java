@@ -20,7 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 
-@Component
+// @Component - DÉSACTIVÉ: Les données s'initialisent via les scripts SQL (bd/*.sql)
+// Pour initialiser la base: exécutez bd/reset.sql ou bd/data.sql
 public class DataInitializer implements CommandLineRunner {
 
     private final TypeVisaRepository typeVisaRepository;
@@ -109,6 +110,7 @@ public class DataInitializer implements CommandLineRunner {
             for (ProfilTypeCode profilType : ProfilTypeCode.values()) {
                 TypeProfil tp = typeProfilRepository.findByLibelle(profilType).orElseThrow();
 
+                // Pièces obligatoires de base
                 List<String> basePieces = Arrays.asList(
                         "Copie passeport",
                         "Copie visa transformable",
@@ -119,6 +121,7 @@ public class DataInitializer implements CommandLineRunner {
                         ? Arrays.asList("Certificat de scolarite", "Attestation de prise en charge")
                         : Arrays.asList("Contrat de travail", "Attestation employeur");
 
+                // Pièces obligatoires spécifiques au type de demande
                 for (String libelle : basePieces) {
                     savePiece(td, tp, libelle, true);
                 }
@@ -131,6 +134,34 @@ public class DataInitializer implements CommandLineRunner {
                 }
                 if (demandeType == DemandeTypeCode.TRANSFERT_VISA || demandeType == DemandeTypeCode.TRANSFERT_VISA_CARTE_RESIDENT) {
                     savePiece(td, tp, "Justificatif de transfert", true);
+                }
+
+                // Pièces justificatives optionnelles
+                List<String> optionalBasePieces = Arrays.asList(
+                        "Lettre de motivation",
+                        "Copie diplomes",
+                        "Certificat de bonne conduite",
+                        "Assurance voyage"
+                );
+
+                for (String libelle : optionalBasePieces) {
+                    savePiece(td, tp, libelle, false);
+                }
+
+                // Pièces optionnelles spécifiques au profil
+                if (profilType == ProfilTypeCode.ETUDIANT) {
+                    savePiece(td, tp, "Relevé de notes", false);
+                    savePiece(td, tp, "Lettre de recommandation", false);
+                    savePiece(td, tp, "Plan d'etudes", false);
+                } else {
+                    savePiece(td, tp, "Bulletin de salaire recent", false);
+                    savePiece(td, tp, "Bilan comptable entreprise", false);
+                }
+
+                // Pièces optionnelles spécifiques au type de demande
+                if (demandeType == DemandeTypeCode.NOUVEAU_TITRE) {
+                    savePiece(td, tp, "Justificatif de domicile", false);
+                    savePiece(td, tp, "Photo d'identite couleur", false);
                 }
             }
         }

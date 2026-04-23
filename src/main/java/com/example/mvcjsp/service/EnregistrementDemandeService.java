@@ -65,29 +65,40 @@ public class EnregistrementDemandeService {
         validateCivilState(form, result);
         validateVisa(form, result);
         validateSansDonneesRule(form, result);
-
-        if (form.getTypeDemande() != null && form.getTypeProfil() != null) {
-            TypeDemande typeDemande = typeDemandeRepository.findByLibelle(form.getTypeDemande()).orElse(null);
-            TypeProfil typeProfil = typeProfilRepository.findByLibelle(form.getTypeProfil()).orElse(null);
-
-            if (typeDemande == null || typeProfil == null) {
-                result.addError("Type de demande ou profil invalide.");
-            } else {
-                List<PieceJustificative> requiredPieces = pieceJustificativeRepository
-                        .findByTypeDemandeAndTypeProfilAndObligatoireTrueOrderByIdAsc(typeDemande, typeProfil);
-
-                Set<Long> selected = new HashSet<>(form.getPieceIds());
-                boolean allRequiredChecked = requiredPieces.stream()
-                        .map(PieceJustificative::getId)
-                        .allMatch(selected::contains);
-
-                if (!allRequiredChecked) {
-                    result.addError("Toutes les pieces justificatives obligatoires doivent etre cochees.");
-                }
-            }
-        }
+        validatePiecesJustificatives(form, result);
 
         return result;
+    }
+
+    private void validatePiecesJustificatives(EnregistrementDemandeForm form, ValidationResult result) {
+        if (form.getTypeDemande() == null || form.getTypeProfil() == null) {
+            return;
+        }
+
+        TypeDemande typeDemande = typeDemandeRepository.findByLibelle(form.getTypeDemande()).orElse(null);
+        TypeProfil typeProfil = typeProfilRepository.findByLibelle(form.getTypeProfil()).orElse(null);
+
+        if (typeDemande == null || typeProfil == null) {
+            result.addError("Type de demande ou profil invalide.");
+            return;
+        }
+
+        List<PieceJustificative> requiredPieces = pieceJustificativeRepository
+                .findByTypeDemandeAndTypeProfilAndObligatoireTrueOrderByIdAsc(typeDemande, typeProfil);
+
+        if (requiredPieces.isEmpty()) {
+            return;
+        }
+
+        Set<Long> selected = new HashSet<>(form.getPieceIds());
+        List<String> missingPieces = requiredPieces.stream()
+                .filter(piece -> !selected.contains(piece.getId()))
+                .map(PieceJustificative::getLibelle)
+                .collect(Collectors.toList());
+
+        if (!missingPieces.isEmpty()) {
+            result.addError("Les pieces justificatives obligatoires suivantes doivent etre fournies : " + String.join(", ", missingPieces));
+        }
     }
 
     @Transactional

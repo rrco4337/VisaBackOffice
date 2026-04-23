@@ -138,7 +138,7 @@
             <div class="row g-3 mb-5 align-items-center">
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">Type de titre demandé</label>
-                    <select class="form-select bg-light border-0" name="typeDemande" id="typeDemande" onchange="let url='/demande?typeDemande=' + this.value + '&typeProfil=' + document.getElementById('typeProfil').value; if(document.getElementById('personneId').value) url += '&personneId=' + document.getElementById('personneId').value; window.location.href=url">
+                    <select class="form-select bg-light border-0" name="typeDemande" id="typeDemande" onchange="loadPieces()">
                         <c:forEach var="type" items="${typesDemande}">
                             <option value="${type}" ${form.typeDemande == type ? 'selected="selected"' : ''}>${type}</option>
                         </c:forEach>
@@ -146,7 +146,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">Type de profil</label>
-                    <select class="form-select bg-light border-0" name="typeProfil" id="typeProfil" onchange="let url='/demande?typeDemande=' + document.getElementById('typeDemande').value + '&typeProfil=' + this.value; if(document.getElementById('personneId').value) url += '&personneId=' + document.getElementById('personneId').value; window.location.href=url">
+                    <select class="form-select bg-light border-0" name="typeProfil" id="typeProfil" onchange="loadPieces()">
                         <c:forEach var="profil" items="${typesProfil}">
                             <option value="${profil}" ${form.typeProfil == profil ? 'selected="selected"' : ''}>${profil}</option>
                         </c:forEach>
@@ -161,22 +161,14 @@
             </div>
 
             <h4 class="mb-4 text-primary fw-bold border-bottom pb-2"><i class="bi bi-check2-square me-2"></i> 4. Pièces justificatives</h4>
+            <div class="alert alert-info alert-dismissible fade show border-0" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>Important :</strong> Les pièces marquées en rouge sont <span class="fw-bold">obligatoires</span> pour votre profil et type de demande.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             <div class="p-4 bg-light rounded-3 mb-5">
-                <div class="row g-3">
-                    <c:forEach var="piece" items="${pieces}">
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input class="form-check-input shadow-sm" type="checkbox" name="pieceIds" value="${piece.id}" id="piece-${piece.id}"
-                                    ${form.pieceIds.contains(piece.id) ? 'checked="checked"' : ''}>
-                                <label class="form-check-label" for="piece-${piece.id}">
-                                    ${piece.libelle}
-                                    <c:if test="${piece.obligatoire}">
-                                        <span class="badge bg-danger rounded-pill ms-2">Obligatoire</span>
-                                    </c:if>
-                                </label>
-                            </div>
-                        </div>
-                    </c:forEach>
+                <div id="piecesContainer" class="row g-3">
+                    <!-- Les pièces seront chargées dynamiquement ici -->
                 </div>
             </div>
 
@@ -187,5 +179,90 @@
         </form>
     </div>
 </div>
+
+<script>
+// Charger les pièces dynamiquement selon le type de demande et profil sélectionné
+function loadPieces() {
+    const typeDemande = document.getElementById('typeDemande').value;
+    const typeProfil = document.getElementById('typeProfil').value;
+
+    if (!typeDemande || !typeProfil) return;
+
+    const url = '/api/pieces?typeDemande=' + encodeURIComponent(typeDemande) + '&typeProfil=' + encodeURIComponent(typeProfil);
+
+    fetch(url)
+        .then(response => response.json())
+        .then(pieces => {
+            const container = document.getElementById('piecesContainer');
+
+            if (pieces.length === 0) {
+                container.innerHTML = '<div class="alert alert-warning mb-0 col-12" role="alert"><i class="bi bi-exclamation-circle me-2"></i> Aucune pièce justificative requise pour cette combinaison de type de demande et profil.</div>';
+                return;
+            }
+
+            // Récupérer les pièces actuellement cochées
+            const checkedPieces = new Set(
+                Array.from(document.querySelectorAll('input[name="pieceIds"]:checked'))
+                    .map(input => parseInt(input.value))
+            );
+
+            // Reconstruire le HTML
+            let html = '';
+            pieces.forEach(piece => {
+                const isChecked = checkedPieces.has(piece.id);
+                const isMandatory = piece.obligatoire;
+                const borderClass = isMandatory ? 'border border-danger border-opacity-25 p-3 rounded' : '';
+                const boldClass = isMandatory ? 'fw-bold' : '';
+                const badge = isMandatory
+                    ? '<span class="badge bg-danger rounded-pill ms-2">Obligatoire</span>'
+                    : '<span class="badge bg-secondary rounded-pill ms-2">Optionnelle</span>';
+
+                html += '<div class="col-md-6">' +
+                    '<div class="form-check ' + borderClass + '">' +
+                    '<input class="form-check-input shadow-sm ' + (isMandatory ? 'required-piece' : '') + '"' +
+                    'type="checkbox" name="pieceIds" value="' + piece.id + '" ' +
+                    'id="piece-' + piece.id + '" ' +
+                    'data-obligatoire="' + (isMandatory ? 'true' : 'false') + '" ' +
+                    (isChecked ? 'checked="checked"' : '') + '>' +
+                    '<label class="form-check-label ' + boldClass + '" for="piece-' + piece.id + '">' +
+                    piece.libelle + ' ' + badge +
+                    '</label>' +
+                    '</div>' +
+                    '</div>';
+            });
+
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des pièces:', error);
+            document.getElementById('piecesContainer').innerHTML =
+                '<div class="alert alert-danger col-12">Erreur lors du chargement des pièces justificatives</div>';
+        });
+}
+
+// Charger les pièces au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    loadPieces();
+});
+
+// Validation des pièces obligatoires à la soumission
+document.querySelector('form[action="demandes/enregistrer"]').addEventListener('submit', function(e) {
+    const requiredPieces = document.querySelectorAll('.required-piece[data-obligatoire="true"]');
+    const missingPieces = [];
+
+    requiredPieces.forEach(function(piece) {
+        if (!piece.checked) {
+            const label = document.querySelector('label[for="' + piece.id + '"]');
+            missingPieces.push(label ? label.textContent.trim() : piece.value);
+        }
+    });
+
+    if (missingPieces.length > 0) {
+        e.preventDefault();
+        alert('Les pièces justificatives obligatoires suivantes doivent être fournies :\n\n' + missingPieces.join('\n'));
+        document.querySelector('h4 .bi-check2-square').parentElement.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
 
 <jsp:include page="layout/layout_footer.jsp" />

@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.mvcjsp.model.Demande;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class UserController {
@@ -97,5 +100,28 @@ public class UserController {
         Demande demande = enregistrementDemandeService.enregistrer(form);
         redirectAttributes.addFlashAttribute("successMessage", "Demande enregistree avec statut " + demande.getStatut() + ".");
         return "redirect:/";
+    }
+
+    @GetMapping("/api/pieces")
+    @ResponseBody
+    public List<Map<String, Object>> getPieces(
+            @RequestParam(required = false) String typeDemande,
+            @RequestParam(required = false) String typeProfil) {
+        try {
+            DemandeTypeCode typeDemandeCode = typeDemande != null ? DemandeTypeCode.valueOf(typeDemande) : null;
+            ProfilTypeCode profilTypeCode = typeProfil != null ? ProfilTypeCode.valueOf(typeProfil) : null;
+
+            List<com.example.mvcjsp.model.PieceJustificative> pieces = enregistrementDemandeService.piecesPour(typeDemandeCode, profilTypeCode);
+
+            return pieces.stream().map(p -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", p.getId());
+                map.put("libelle", p.getLibelle());
+                map.put("obligatoire", p.isObligatoire());
+                return map;
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            return List.of();
+        }
     }
 }
