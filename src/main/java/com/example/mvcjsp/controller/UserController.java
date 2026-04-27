@@ -7,11 +7,13 @@ import com.example.mvcjsp.model.enums.ProfilTypeCode;
 import com.example.mvcjsp.repository.NationaliteRepository;
 import com.example.mvcjsp.repository.SituationFamilialeRepository;
 import com.example.mvcjsp.service.EnregistrementDemandeService;
+import com.example.mvcjsp.service.ScanService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.mvcjsp.model.Demande;
+import com.example.mvcjsp.repository.DemandeRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,15 +24,21 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final EnregistrementDemandeService enregistrementDemandeService;
+    private final ScanService scanService;
+    private final DemandeRepository demandeRepository;
     private final NationaliteRepository nationaliteRepository;
     private final SituationFamilialeRepository situationFamilialeRepository;
 
     public UserController(
             EnregistrementDemandeService enregistrementDemandeService,
+            ScanService scanService,
+            DemandeRepository demandeRepository,
             NationaliteRepository nationaliteRepository,
             SituationFamilialeRepository situationFamilialeRepository
     ){
         this.enregistrementDemandeService = enregistrementDemandeService;
+        this.scanService = scanService;
+        this.demandeRepository = demandeRepository;
         this.nationaliteRepository = nationaliteRepository;
         this.situationFamilialeRepository = situationFamilialeRepository;
     }
@@ -99,7 +107,7 @@ public class UserController {
 
         Demande demande = enregistrementDemandeService.enregistrer(form);
         redirectAttributes.addFlashAttribute("successMessage", "Demande enregistree avec statut " + demande.getStatut() + ".");
-        return "redirect:/";
+        return "redirect:/demandes/" + demande.getId();
     }
 
     @GetMapping("/api/pieces")
@@ -124,4 +132,64 @@ public class UserController {
             return List.of();
         }
     }
+
+    @GetMapping("/demandes/{id}")
+    public String demandDetail(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        Demande demande = demandeRepository.findById(id)
+                .orElse(null);
+
+        if (demande == null) {
+            redirectAttributes.addFlashAttribute("errors", List.of("Dossier introuvable"));
+            return "redirect:/";
+        }
+
+        model.addAttribute("demande", demande);
+        model.addAttribute("isScanned", scanService.isDemandeScanned(demande));
+        model.addAttribute("scannedCount", scanService.getScannedPieceCount(id));
+        model.addAttribute("totalCount", scanService.getTotalPieceCount(id));
+        model.addAttribute("allPiecesScanned", scanService.areAllPiecesScanned(id));
+
+        return "demande-detail";
+    }
+
+    @PostMapping("/demandes/{id}/marquer-scannee")
+    @ResponseBody
+    public Map<String, Object> markPieceAsScanned(@PathVariable Long id, @RequestParam Long pieceId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            scanService.markPieceAsScanned(id, pieceId);
+            long scannedCount = scanService.getScannedPieceCount(id);
+            long totalCount = scanService.getTotalPieceCount(id);
+            boolean allScanned = scanService.areAllPiecesScanned(id);
+
+            response.put("success", true);
+            response.put("scannedCount", scannedCount);
+            response.put("totalCount", totalCount);
+            response.put("allPiecesScanned", allScanned);
+            response.put("message", "Pièce marquée comme scannée");
+        } catch (IllegalStateException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        }
+        return response;
+    }
+
+    @PostMapping("/demandes/{id}/finaliser-scan")
+    public String finalizeScanning(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Demande demande = scanService.finalizeScanning(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Scan finalisé. Dossier verrouillé.");
+            return "redirect:/demandes/" + id;
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errors", List.of(e.getMessage()));
+            return "redirect:/demandes/" + id;
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errors", List.of(e.getMessage()));
+            return "redirect:/";
+        }
+    }
 }
+

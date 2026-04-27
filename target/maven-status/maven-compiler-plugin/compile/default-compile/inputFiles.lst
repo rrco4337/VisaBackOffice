@@ -11,6 +11,7 @@
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/TypeVisa.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/TypeVisaRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/enums/ProfilTypeCode.java
+/Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/service/ScanService.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/VisaRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/enums/VisaTypeCode.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/User.java

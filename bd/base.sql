@@ -108,7 +108,9 @@ CREATE TABLE demande_piece (
     demande_id INTEGER REFERENCES demande(id),
     piece_id INTEGER REFERENCES piece_justificative(id),
     fournie BOOLEAN,
-    date_fourniture DATE
+    date_fourniture DATE,
+    scanned BOOLEAN DEFAULT FALSE,
+    date_scan TIMESTAMP
 );
 
 -- TABLE titre_sejour

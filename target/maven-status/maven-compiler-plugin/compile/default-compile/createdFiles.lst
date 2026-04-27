@@ -1,5 +1,6 @@
 com/example/mvcjsp/DataInitializer.class
 com/example/mvcjsp/Application.class
+com/example/mvcjsp/service/ScanService.class
 com/example/mvcjsp/model/Demande.class
 com/example/mvcjsp/repository/PieceJustificativeRepository.class
 com/example/mvcjsp/model/enums/DemandeStatus.class
