@@ -24,9 +24,10 @@ public class DemandePiece {
     @Column(name = "date_fourniture")
     private LocalDate dateFourniture;
 
+    @Column(nullable = true)
     private boolean scanned = false;
 
-    @Column(name = "date_scan")
+    @Column(name = "date_scan", nullable = true)
     private LocalDateTime dateScan;
 
     public Long getId() { return id; }
