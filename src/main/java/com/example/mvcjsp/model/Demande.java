@@ -27,6 +27,10 @@ public class Demande {
     @JoinColumn(name = "visa_id")
     private Visa visa;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "demande_originale_id")
+    private Demande demandeOriginale;
+
     @Enumerated(EnumType.STRING)
     private DemandeStatus statut;
 
@@ -45,6 +49,8 @@ public class Demande {
     public void setTypeProfil(TypeProfil typeProfil) { this.typeProfil = typeProfil; }
     public Visa getVisa() { return visa; }
     public void setVisa(Visa visa) { this.visa = visa; }
+    public Demande getDemandeOriginale() { return demandeOriginale; }
+    public void setDemandeOriginale(Demande demandeOriginale) { this.demandeOriginale = demandeOriginale; }
     public DemandeStatus getStatut() { return statut; }
     public void setStatut(DemandeStatus statut) { this.statut = statut; }
     public boolean isSansDonnees() { return sansDonnees; }

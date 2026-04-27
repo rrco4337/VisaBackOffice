@@ -87,6 +87,7 @@ CREATE TABLE demande (
     type_demande_id INTEGER REFERENCES type_demande(id),
     type_profil_id INTEGER REFERENCES type_profil(id),
     visa_id INTEGER REFERENCES visa(id),
+    demande_originale_id INTEGER REFERENCES demande(id),
     statut VARCHAR,
     sans_donnees BOOLEAN,
     date_demande TIMESTAMP
