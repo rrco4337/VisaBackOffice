@@ -272,11 +272,12 @@ function uploadPieceFile(demandeId, pieceId, fileInput) {
     const file = fileInput.files[0];
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('pieceId', pieceId);
 
     const uploadBtn = fileInput.nextElementSibling;
     uploadBtn.disabled = true;
 
-    fetch('/demandes/' + demandeId + '/upload-fichier', {
+    fetch('/demandes/' + demandeId + '/upload-fichier?pieceId=' + pieceId, {
         method: 'POST',
         body: formData
     })
@@ -301,35 +302,37 @@ function uploadPieceFile(demandeId, pieceId, fileInput) {
 
 // Load files for a specific piece
 function loadPieceFiles(demandeId, pieceId) {
-    fetch('/demandes/' + demandeId + '/fichiers')
+    fetch('/demandes/' + demandeId + '/piece/' + pieceId + '/fichiers')
     .then(response => response.json())
     .then(fichiers => {
         const container = document.getElementById('files-piece-' + pieceId);
         container.innerHTML = '';
 
-        // Filter files for this piece (we need to link files to pieces)
-        // For now, show all files - TODO: add piece_id to FichierDossier
         const filesList = document.createElement('div');
         filesList.className = 'small';
 
-        fichiers.forEach(f => {
-            const sizeMB = (f.tailleFichier / (1024 * 1024)).toFixed(2);
-            const fileRow = document.createElement('div');
-            fileRow.className = 'd-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded';
-            fileRow.innerHTML = '<div>' +
-                '<i class="bi bi-filetype-pdf text-danger me-2"></i>' +
-                '<strong>' + f.nomFichier + '</strong> (' + sizeMB + ' MB)' +
-                '</div>' +
-                '<div class="gap-1">' +
-                '<a href="/demandes/' + demandeId + '/fichiers/' + f.id + '/download" class="btn btn-xs btn-link text-decoration-none" title="Télécharger">' +
-                '<i class="bi bi-download"></i>' +
-                '</a>' +
-                '<button class="btn btn-xs btn-link text-danger text-decoration-none" onclick="deleteFile(' + f.id + ', ' + demandeId + ', ' + pieceId + ')" title="Supprimer">' +
-                '<i class="bi bi-trash"></i>' +
-                '</button>' +
-                '</div>';
-            filesList.appendChild(fileRow);
-        });
+        if (fichiers.length === 0) {
+            filesList.innerHTML = '<div class="text-muted">Aucun fichier</div>';
+        } else {
+            fichiers.forEach(f => {
+                const sizeMB = (f.tailleFichier / (1024 * 1024)).toFixed(2);
+                const fileRow = document.createElement('div');
+                fileRow.className = 'd-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded';
+                fileRow.innerHTML = '<div>' +
+                    '<i class="bi bi-filetype-pdf text-danger me-2"></i>' +
+                    '<strong>' + f.nomFichier + '</strong> (' + sizeMB + ' MB)' +
+                    '</div>' +
+                    '<div class="gap-1">' +
+                    '<a href="/demandes/' + demandeId + '/fichiers/' + f.id + '/download" class="btn btn-xs btn-link text-decoration-none" title="Télécharger">' +
+                    '<i class="bi bi-download"></i>' +
+                    '</a>' +
+                    '<button class="btn btn-xs btn-link text-danger text-decoration-none" onclick="deleteFile(' + f.id + ', ' + demandeId + ', ' + pieceId + ')" title="Supprimer">' +
+                    '<i class="bi bi-trash"></i>' +
+                    '</button>' +
+                    '</div>';
+                filesList.appendChild(fileRow);
+            });
+        }
 
         container.appendChild(filesList);
     })

@@ -14,6 +14,10 @@ public class FichierDossier {
     @JoinColumn(name = "demande_id")
     private Demande demande;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "piece_id")
+    private PieceJustificative piece;
+
     @Column(name = "nom_fichier", nullable = false)
     private String nomFichier;
 
@@ -38,6 +42,8 @@ public class FichierDossier {
     public Long getId() { return id; }
     public Demande getDemande() { return demande; }
     public void setDemande(Demande demande) { this.demande = demande; }
+    public PieceJustificative getPiece() { return piece; }
+    public void setPiece(PieceJustificative piece) { this.piece = piece; }
     public String getNomFichier() { return nomFichier; }
     public void setNomFichier(String nomFichier) { this.nomFichier = nomFichier; }
     public String getCheminFichier() { return cheminFichier; }

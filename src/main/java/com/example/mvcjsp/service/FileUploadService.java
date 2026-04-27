@@ -2,9 +2,11 @@ package com.example.mvcjsp.service;
 
 import com.example.mvcjsp.config.FileUploadConfig;
 import com.example.mvcjsp.model.Demande;
+import com.example.mvcjsp.model.DemandePiece;
 import com.example.mvcjsp.model.FichierDossier;
 import com.example.mvcjsp.model.enums.DemandeStatus;
 import com.example.mvcjsp.repository.DemandeRepository;
+import com.example.mvcjsp.repository.DemandePieceRepository;
 import com.example.mvcjsp.repository.FichierDossierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,14 +32,17 @@ public class FileUploadService {
     private DemandeRepository demandeRepository;
 
     @Autowired
+    private DemandePieceRepository demandePieceRepository;
+
+    @Autowired
     private FileUploadConfig fileUploadConfig;
 
     private static final String PDF_MIME_TYPE = "application/pdf";
 
     /**
-     * Upload a file for a demande
+     * Upload a file for a specific piece of a demande
      */
-    public FichierDossier uploadFile(Long demandeId, MultipartFile file) {
+    public FichierDossier uploadFile(Long demandeId, Long pieceId, MultipartFile file) {
         // Validate demande exists and is not locked
         Demande demande = demandeRepository.findById(demandeId)
                 .orElseThrow(() -> new IllegalArgumentException("Dossier introuvable: " + demandeId));
@@ -46,16 +51,17 @@ public class FileUploadService {
             throw new IllegalStateException("Le dossier est verrouillé. Les uploads ne sont pas autorisés.");
         }
 
+        // Validate piece exists and is associated with demande
+        DemandePiece demandePiece = demandePieceRepository.findByDemandeIdAndPieceId(demandeId, pieceId)
+                .orElseThrow(() -> new IllegalArgumentException("Pièce non associée à ce dossier: " + pieceId));
+
+        // Check if file already exists for this piece (prevent duplicates)
+        if (fichierDossierRepository.existsByDemandeIdAndPieceId(demandeId, pieceId)) {
+            throw new IllegalStateException("Un fichier existe déjà pour cette pièce. Supprimez l'ancien fichier avant d'en uploader un nouveau.");
+        }
+
         // Validate file
         validateFile(file);
-
-        // Check file count limit
-        long fileCount = fichierDossierRepository.countByDemandeId(demandeId);
-        if (fileCount >= fileUploadConfig.getMaxFilesPerDemande()) {
-            throw new IllegalStateException(
-                    String.format("Nombre maximum de fichiers atteint (%d)", fileUploadConfig.getMaxFilesPerDemande())
-            );
-        }
 
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
@@ -76,13 +82,13 @@ public class FileUploadService {
         // Create database entry
         FichierDossier fichier = new FichierDossier();
         fichier.setDemande(demande);
+        fichier.setPiece(demandePiece.getPiece());
         fichier.setNomFichier(originalFilename);
         fichier.setCheminFichier(filePath.toString());
         fichier.setTailleFichier(file.getSize());
         fichier.setTypeContenu(file.getContentType());
         fichier.setDateUpload(LocalDateTime.now());
         fichier.setDateModification(LocalDateTime.now());
-        // Note: utilisateurUpload could be set from authentication context if available
 
         return fichierDossierRepository.save(fichier);
     }
@@ -115,6 +121,13 @@ public class FileUploadService {
      */
     public List<FichierDossier> listFiles(Long demandeId) {
         return fichierDossierRepository.findByDemandeIdOrderByDateUploadDesc(demandeId);
+    }
+
+    /**
+     * List files for a specific piece of a demande
+     */
+    public List<FichierDossier> listFilesForPiece(Long demandeId, Long pieceId) {
+        return fichierDossierRepository.findByDemandeIdAndPieceIdOrderByDateUploadDesc(demandeId, pieceId);
     }
 
     /**

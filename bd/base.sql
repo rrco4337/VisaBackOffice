@@ -128,6 +128,7 @@ CREATE TABLE titre_sejour (
 CREATE TABLE fichier_dossier (
     id SERIAL PRIMARY KEY,
     demande_id INTEGER NOT NULL REFERENCES demande(id) ON DELETE CASCADE,
+    piece_id INTEGER REFERENCES piece_justificative(id) ON DELETE CASCADE,
     nom_fichier VARCHAR NOT NULL,
     chemin_fichier VARCHAR NOT NULL,
     taille_fichier BIGINT,
@@ -138,6 +139,8 @@ CREATE TABLE fichier_dossier (
 );
 
 CREATE INDEX idx_fichier_demande ON fichier_dossier(demande_id);
+CREATE INDEX idx_fichier_piece ON fichier_dossier(piece_id);
+CREATE UNIQUE INDEX idx_fichier_demande_piece ON fichier_dossier(demande_id, piece_id);
 
 -- TABLE famille
 CREATE TABLE famille (

@@ -203,10 +203,10 @@ public class UserController {
 
     @PostMapping("/demandes/{id}/upload-fichier")
     @ResponseBody
-    public Map<String, Object> uploadFile(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    public Map<String, Object> uploadFile(@PathVariable Long id, @RequestParam("file") MultipartFile file, @RequestParam Long pieceId) {
         Map<String, Object> response = new HashMap<>();
         try {
-            FichierDossier fichier = fileUploadService.uploadFile(id, file);
+            FichierDossier fichier = fileUploadService.uploadFile(id, pieceId, file);
             long fileCount = fileUploadService.getFileCount(id);
 
             Map<String, Object> fichierMap = new HashMap<>();
@@ -236,6 +236,21 @@ public class UserController {
     @ResponseBody
     public List<Map<String, Object>> listFiles(@PathVariable Long id) {
         List<FichierDossier> fichiers = fileUploadService.listFiles(id);
+        return fichiers.stream().map(f -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", f.getId());
+            map.put("nomFichier", f.getNomFichier());
+            map.put("tailleFichier", f.getTailleFichier());
+            map.put("dateUpload", f.getDateUpload());
+            map.put("typeContenu", f.getTypeContenu());
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    @GetMapping("/demandes/{demandeId}/piece/{pieceId}/fichiers")
+    @ResponseBody
+    public List<Map<String, Object>> listFilesForPiece(@PathVariable Long demandeId, @PathVariable Long pieceId) {
+        List<FichierDossier> fichiers = fileUploadService.listFilesForPiece(demandeId, pieceId);
         return fichiers.stream().map(f -> {
             Map<String, Object> map = new HashMap<>();
             map.put("id", f.getId());
