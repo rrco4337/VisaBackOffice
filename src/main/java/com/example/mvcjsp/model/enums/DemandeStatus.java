@@ -2,5 +2,8 @@ package com.example.mvcjsp.model.enums;
 
 public enum DemandeStatus {
     CREER,
-    APPROUVEE
+    EN_COURS_DE_SCAN,
+    SCANNE,
+    APPROUVEE,
+    ANNULEE
 }

@@ -3,14 +3,17 @@
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/DemandePiece.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/service/EnregistrementDemandeService.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/dto/ValidationResult.java
+/Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/FichierDossierRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/PasseportRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/service/BusinessException.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/enums/DemandeStatus.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/PieceJustificativeRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/DataInitializer.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/TypeVisa.java
+/Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/FichierDossier.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/TypeVisaRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/enums/ProfilTypeCode.java
+/Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/service/ScanService.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/VisaRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/enums/VisaTypeCode.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/User.java
@@ -30,6 +33,8 @@
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/Demande.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/DemandePieceRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/enums/DemandeTypeCode.java
+/Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/config/FileUploadConfig.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/model/Passeport.java
+/Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/service/FileUploadService.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/repository/UserRepository.java
 /Users/apple/Documents/GitHub/Untitled/VisaBackOffice/src/main/java/com/example/mvcjsp/Application.java

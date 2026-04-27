@@ -37,7 +37,7 @@
                 </thead>
                 <tbody class="border-top-0">
                 <c:forEach var="d" items="${demandesRecentes}">
-                    <tr>
+                    <tr style="cursor: pointer;" onclick="location.href='/demandes/${d.id}';" class="table-row-hover">
                         <td><span class="badge bg-secondary opacity-75 rounded-pill">#${d.id}</span></td>
                         <td class="fw-medium text-dark">${d.personne.nom} ${d.personne.prenom}</td>
                         <td class="text-secondary">${d.typeDemande.libelle}</td>
@@ -46,6 +46,7 @@
                             <c:choose>
                                 <c:when test="${d.statut.name() == 'ACTIF'}"><span class="badge bg-success rounded-pill shadow-sm">Actif</span></c:when>
                                 <c:when test="${d.statut.name() == 'CREER'}"><span class="badge bg-primary rounded-pill shadow-sm">Créé</span></c:when>
+                                <c:when test="${d.statut.name() == 'SCANNE'}"><span class="badge bg-success rounded-pill shadow-sm"><i class="bi bi-lock-fill me-1"></i>Verrouillé</span></c:when>
                                 <c:otherwise><span class="badge bg-secondary rounded-pill shadow-sm">${d.statut.name()}</span></c:otherwise>
                             </c:choose>
                         </td>

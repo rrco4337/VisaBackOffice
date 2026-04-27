@@ -2,6 +2,7 @@ package com.example.mvcjsp.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "demande_piece")
@@ -23,6 +24,12 @@ public class DemandePiece {
     @Column(name = "date_fourniture")
     private LocalDate dateFourniture;
 
+    @Column(nullable = true, columnDefinition = "boolean default false")
+    private Boolean scanned;
+
+    @Column(name = "date_scan", nullable = true)
+    private LocalDateTime dateScan;
+
     public Long getId() { return id; }
     public Demande getDemande() { return demande; }
     public void setDemande(Demande demande) { this.demande = demande; }
@@ -32,4 +39,8 @@ public class DemandePiece {
     public void setFournie(boolean fournie) { this.fournie = fournie; }
     public LocalDate getDateFourniture() { return dateFourniture; }
     public void setDateFourniture(LocalDate dateFourniture) { this.dateFourniture = dateFourniture; }
+    public boolean isScanned() { return scanned != null && scanned; }
+    public void setScanned(boolean scanned) { this.scanned = scanned; }
+    public LocalDateTime getDateScan() { return dateScan; }
+    public void setDateScan(LocalDateTime dateScan) { this.dateScan = dateScan; }
 }

@@ -138,7 +138,7 @@
             <div class="row g-3 mb-5 align-items-center">
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">Type de titre demandé</label>
-                    <select class="form-select bg-light border-0" name="typeDemande" id="typeDemande" onchange="loadPieces()">
+                    <select class="form-select bg-light border-0" name="typeDemande" id="typeDemande" onchange="loadPieces(); toggleSourceDemande()">
                         <c:forEach var="type" items="${typesDemande}">
                             <option value="${type}" ${form.typeDemande == type ? 'selected="selected"' : ''}>${type}</option>
                         </c:forEach>
@@ -154,9 +154,14 @@
                 </div>
                 <div class="col-12 mt-4">
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="sansDonnees" name="sansDonnees" ${form.sansDonnees ? 'checked="checked"' : ''}>
+                        <input class="form-check-input" type="checkbox" role="switch" id="sansDonnees" name="sansDonnees" ${form.sansDonnees ? 'checked="checked"' : ''} onchange="toggleSourceDemande()">
                         <label class="form-check-label text-dark" for="sansDonnees">Sans données (autorisé pour duplicata et transfert)</label>
                     </div>
+                </div>
+                <div id="demandeSourceContainer" class="col-md-6" style="display: none;">
+                    <label class="form-label text-muted small fw-bold">ID du dossier source <span class="badge bg-warning text-dark">Obligatoire pour duplicata/transfert</span></label>
+                    <input type="number" class="form-control bg-light border-0" name="demandeOriginalId" id="demandeOriginalId" value="${form.demandeOriginalId}" placeholder="Entrez l'ID du dossier à dupliquer/transférer">
+                    <small class="text-muted">Cet ID doit correspondre à un dossier existant dans la base de données</small>
                 </div>
             </div>
 
@@ -240,13 +245,48 @@ function loadPieces() {
         });
 }
 
+// Afficher/masquer le champ du dossier source selon le type de demande et sansDonnees
+function toggleSourceDemande() {
+    const typeDemande = document.getElementById('typeDemande').value;
+    const sansDonnees = document.getElementById('sansDonnees').checked;
+    const sourceContainer = document.getElementById('demandeSourceContainer');
+    const sourceInput = document.getElementById('demandeOriginalId');
+
+    const typesRequiringSource = ['DUPLICATA', 'TRANSFERT_VISA', 'TRANSFERT_VISA_CARTE_RESIDENT'];
+
+    if (sansDonnees && typesRequiringSource.includes(typeDemande)) {
+        sourceContainer.style.display = 'block';
+        sourceInput.required = true;
+    } else {
+        sourceContainer.style.display = 'none';
+        sourceInput.required = false;
+        sourceInput.value = '';
+    }
+}
+
 // Charger les pièces au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
     loadPieces();
+    toggleSourceDemande();
 });
 
 // Validation des pièces obligatoires à la soumission
 document.querySelector('form[action="demandes/enregistrer"]').addEventListener('submit', function(e) {
+    const typeDemande = document.getElementById('typeDemande').value;
+    const sansDonnees = document.getElementById('sansDonnees').checked;
+    const sourceInput = document.getElementById('demandeOriginalId');
+    const typesRequiringSource = ['DUPLICATA', 'TRANSFERT_VISA', 'TRANSFERT_VISA_CARTE_RESIDENT'];
+
+    // Vérifier que le dossier source est spécifié si nécessaire
+    if (sansDonnees && typesRequiringSource.includes(typeDemande)) {
+        if (!sourceInput.value || sourceInput.value.trim() === '') {
+            e.preventDefault();
+            alert('Le dossier source (ID) est obligatoire pour un duplicata ou transfert sans données.');
+            sourceInput.focus();
+            return;
+        }
+    }
+
     const requiredPieces = document.querySelectorAll('.required-piece[data-obligatoire="true"]');
     const missingPieces = [];
 

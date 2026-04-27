@@ -46,6 +46,7 @@ public class EnregistrementDemandeForm {
     private DemandeTypeCode typeDemande;
     private ProfilTypeCode typeProfil;
     private boolean sansDonnees;
+    private Long demandeOriginalId;
     private List<Long> pieceIds = new ArrayList<>();
 
     public String getNom() { return nom; }
@@ -92,6 +93,8 @@ public class EnregistrementDemandeForm {
     public void setTypeProfil(ProfilTypeCode typeProfil) { this.typeProfil = typeProfil; }
     public boolean isSansDonnees() { return sansDonnees; }
     public void setSansDonnees(boolean sansDonnees) { this.sansDonnees = sansDonnees; }
+    public Long getDemandeOriginalId() { return demandeOriginalId; }
+    public void setDemandeOriginalId(Long demandeOriginalId) { this.demandeOriginalId = demandeOriginalId; }
     public List<Long> getPieceIds() { return pieceIds; }
     public void setPieceIds(List<Long> pieceIds) { this.pieceIds = pieceIds == null ? new ArrayList<>() : pieceIds; }
 }

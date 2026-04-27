@@ -87,6 +87,7 @@ CREATE TABLE demande (
     type_demande_id INTEGER REFERENCES type_demande(id),
     type_profil_id INTEGER REFERENCES type_profil(id),
     visa_id INTEGER REFERENCES visa(id),
+    demande_originale_id INTEGER REFERENCES demande(id),
     statut VARCHAR,
     sans_donnees BOOLEAN,
     date_demande TIMESTAMP
@@ -107,7 +108,9 @@ CREATE TABLE demande_piece (
     demande_id INTEGER REFERENCES demande(id),
     piece_id INTEGER REFERENCES piece_justificative(id),
     fournie BOOLEAN,
-    date_fourniture DATE
+    date_fourniture DATE,
+    scanned BOOLEAN DEFAULT FALSE,
+    date_scan TIMESTAMP
 );
 
 -- TABLE titre_sejour
@@ -120,6 +123,24 @@ CREATE TABLE titre_sejour (
     date_delivrance DATE,
     date_expiration DATE
 );
+
+-- TABLE fichier_dossier
+CREATE TABLE fichier_dossier (
+    id SERIAL PRIMARY KEY,
+    demande_id INTEGER NOT NULL REFERENCES demande(id) ON DELETE CASCADE,
+    piece_id INTEGER REFERENCES piece_justificative(id) ON DELETE CASCADE,
+    nom_fichier VARCHAR NOT NULL,
+    chemin_fichier VARCHAR NOT NULL,
+    taille_fichier BIGINT,
+    type_contenu VARCHAR,
+    date_upload TIMESTAMP NOT NULL,
+    date_modification TIMESTAMP,
+    utilisateur_upload VARCHAR
+);
+
+CREATE INDEX idx_fichier_demande ON fichier_dossier(demande_id);
+CREATE INDEX idx_fichier_piece ON fichier_dossier(piece_id);
+CREATE UNIQUE INDEX idx_fichier_demande_piece ON fichier_dossier(demande_id, piece_id);
 
 -- TABLE famille
 CREATE TABLE famille (

@@ -65,6 +65,7 @@ public class EnregistrementDemandeService {
         validateCivilState(form, result);
         validateVisa(form, result);
         validateSansDonneesRule(form, result);
+        validateDemandeSource(form, result);
         validatePiecesJustificatives(form, result);
 
         return result;
@@ -175,6 +176,14 @@ public class EnregistrementDemandeService {
         demande.setSansDonnees(form.isSansDonnees());
         demande.setStatut(statut);
         demande.setDateDemande(LocalDateTime.now());
+
+        // Lier au dossier original si c'est un duplicata/transfert
+        if (form.getDemandeOriginalId() != null) {
+            Demande demandeSource = demandeRepository.findById(form.getDemandeOriginalId())
+                    .orElseThrow(() -> new BusinessException("Dossier source introuvable."));
+            demande.setDemandeOriginale(demandeSource);
+        }
+
         demande = demandeRepository.save(demande);
 
         Set<Long> selectedPieceIds = new HashSet<>(form.getPieceIds());
@@ -282,6 +291,32 @@ public class EnregistrementDemandeService {
         LocalDate maxExpiration = form.getDateEntree().plusMonths(3);
         if (form.getDateExpirationVisa().isAfter(maxExpiration)) {
             result.addError("Le visa transformable doit etre valide au maximum 3 mois apres la date d'entree.");
+        }
+    }
+
+    private void validateDemandeSource(EnregistrementDemandeForm form, ValidationResult result) {
+        if (!form.isSansDonnees()) {
+            return;
+        }
+
+        Set<DemandeTypeCode> typesRequiringSource = Set.of(
+                DemandeTypeCode.DUPLICATA,
+                DemandeTypeCode.TRANSFERT_VISA,
+                DemandeTypeCode.TRANSFERT_VISA_CARTE_RESIDENT
+        );
+
+        if (!typesRequiringSource.contains(form.getTypeDemande())) {
+            return;
+        }
+
+        if (form.getDemandeOriginalId() == null) {
+            result.addError("Le dossier source est obligatoire pour un duplicata ou transfert.");
+            return;
+        }
+
+        Demande demandeSource = demandeRepository.findById(form.getDemandeOriginalId()).orElse(null);
+        if (demandeSource == null) {
+            result.addError("Le dossier source (ID: " + form.getDemandeOriginalId() + ") n'existe pas.");
         }
     }
 

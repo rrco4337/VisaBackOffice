@@ -3,6 +3,7 @@ package com.example.mvcjsp.model;
 import com.example.mvcjsp.model.enums.DemandeStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "demande")
@@ -27,6 +28,16 @@ public class Demande {
     @JoinColumn(name = "visa_id")
     private Visa visa;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "demande_originale_id")
+    private Demande demandeOriginale;
+
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DemandePiece> demandePieces;
+
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FichierDossier> fichiers;
+
     @Enumerated(EnumType.STRING)
     private DemandeStatus statut;
 
@@ -45,6 +56,12 @@ public class Demande {
     public void setTypeProfil(TypeProfil typeProfil) { this.typeProfil = typeProfil; }
     public Visa getVisa() { return visa; }
     public void setVisa(Visa visa) { this.visa = visa; }
+    public Demande getDemandeOriginale() { return demandeOriginale; }
+    public void setDemandeOriginale(Demande demandeOriginale) { this.demandeOriginale = demandeOriginale; }
+    public List<DemandePiece> getDemandePieces() { return demandePieces; }
+    public void setDemandePieces(List<DemandePiece> demandePieces) { this.demandePieces = demandePieces; }
+    public List<FichierDossier> getFichiers() { return fichiers; }
+    public void setFichiers(List<FichierDossier> fichiers) { this.fichiers = fichiers; }
     public DemandeStatus getStatut() { return statut; }
     public void setStatut(DemandeStatus statut) { this.statut = statut; }
     public boolean isSansDonnees() { return sansDonnees; }
@@ -52,3 +69,4 @@ public class Demande {
     public LocalDateTime getDateDemande() { return dateDemande; }
     public void setDateDemande(LocalDateTime dateDemande) { this.dateDemande = dateDemande; }
 }
+
