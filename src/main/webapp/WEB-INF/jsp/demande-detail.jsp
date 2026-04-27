@@ -207,6 +207,88 @@
         </div>
     </div>
 
+    <!-- Upload de fichiers PDF -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-cloud-upload me-2"></i> Télécharger les fichiers PDF</h5>
+
+                    <c:if test="${!isScanned}">
+                        <div class="mb-3">
+                            <form id="uploadForm" class="d-flex gap-2 align-items-center">
+                                <input type="file" id="fileInput" name="file" accept=".pdf" class="form-control" required>
+                                <button type="submit" class="btn btn-primary" id="uploadBtn">
+                                    <i class="bi bi-upload me-1"></i> Uploader
+                                </button>
+                            </form>
+                            <div id="uploadStatus" class="mt-2"></div>
+                            <progress id="uploadProgress" class="w-100 mt-2" max="100" value="0" style="display: none;"></progress>
+                        </div>
+                    </c:if>
+
+                    <!-- Fichiers téléchargés -->
+                    <div id="filesContainer" class="mt-4">
+                        <h6 class="mb-3">Fichiers téléchargés
+                            <span class="badge bg-secondary" id="fileCountBadge">
+                                ${empty demande.fichiers ? 0 : demande.fichiers.size()}/10
+                            </span>
+                        </h6>
+
+                        <c:choose>
+                            <c:when test="${empty demande.fichiers}">
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle me-2"></i> Aucun fichier téléchargé.
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <tbody id="filesList">
+                                            <c:forEach var="f" items="${demande.fichiers}">
+                                                <tr data-fichier-id="${f.id}">
+                                                    <td class="align-middle">
+                                                        <i class="bi bi-filetype-pdf text-danger me-2"></i>
+                                                        <strong>${f.nomFichier}</strong>
+                                                    </td>
+                                                    <td class="text-muted small align-middle">
+                                                        <c:set var="sizeMB" value="${f.tailleFichier / (1024 * 1024)}"/>
+                                                        ${String.format("%.2f", sizeMB)} MB
+                                                    </td>
+                                                    <td class="text-muted small align-middle">
+                                                        ${f.dateUpload}
+                                                    </td>
+                                                    <td class="text-end align-middle">
+                                                        <a href="/demandes/${demande.id}/fichiers/${f.id}/download"
+                                                           class="btn btn-sm btn-outline-primary me-2" title="Télécharger">
+                                                            <i class="bi bi-download"></i>
+                                                        </a>
+                                                        <c:if test="${!isScanned}">
+                                                            <button class="btn btn-sm btn-outline-danger"
+                                                                    onclick="deleteFile(${f.id})" title="Supprimer">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </c:if>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <c:if test="${isScanned}">
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <i class="bi bi-lock-fill me-2"></i> Dossier verrouillé. Les uploads et suppressions ne sont pas autorisés.
+                        </div>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Boutons d'action -->
     <div class="row mb-4">
         <div class="col-12">
@@ -244,6 +326,120 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+// Upload file AJAX
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadProgress = document.getElementById('uploadProgress');
+
+    if (!fileInput.files || !fileInput.files[0]) {
+        uploadStatus.innerHTML = '<div class="alert alert-warning">Veuillez sélectionner un fichier</div>';
+        return;
+    }
+
+    // Disable button during upload
+    uploadBtn.disabled = true;
+    uploadProgress.style.display = 'block';
+    uploadProgress.value = 0;
+    uploadStatus.innerHTML = '';
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    fetch('/demandes/${demande.id}/upload-fichier', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        uploadProgress.style.display = 'none';
+        uploadBtn.disabled = false;
+
+        if (data.success) {
+            uploadStatus.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>' + data.message + '</div>';
+            fileInput.value = '';
+            refreshFileList();
+        } else {
+            uploadStatus.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>' + (data.error || 'Erreur inconnue') + '</div>';
+        }
+    })
+    .catch(error => {
+        uploadProgress.style.display = 'none';
+        uploadBtn.disabled = false;
+        uploadStatus.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>Erreur lors de l\'upload: ' + error.message + '</div>';
+    });
+});
+
+// Delete file AJAX
+function deleteFile(fichierDossierId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?')) {
+        return;
+    }
+
+    fetch('/demandes/${demande.id}/fichiers/' + fichierDossierId, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove row from table
+            document.querySelector('tr[data-fichier-id="' + fichierDossierId + '"]').remove();
+            // Update count badge
+            const fileCount = data.fileCount;
+            document.getElementById('fileCountBadge').textContent = fileCount + '/10';
+
+            // Show empty message if no more files
+            if (fileCount === 0) {
+                document.getElementById('filesContainer').innerHTML = '<h6 class="mb-3">Fichiers téléchargés <span class="badge bg-secondary">0/10</span></h6><div class="alert alert-info mb-0"><i class="bi bi-info-circle me-2"></i> Aucun fichier téléchargé.</div>';
+            }
+        } else {
+            alert('Erreur: ' + (data.error || 'Impossible de supprimer le fichier'));
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de la suppression: ' + error.message);
+    });
+}
+
+// Refresh file list
+function refreshFileList() {
+    fetch('/demandes/${demande.id}/fichiers')
+    .then(response => response.json())
+    .then(fichiers => {
+        document.getElementById('fileCountBadge').textContent = fichiers.length + '/10';
+
+        if (fichiers.length === 0) {
+            document.getElementById('filesContainer').innerHTML = '<h6 class="mb-3">Fichiers téléchargés <span class="badge bg-secondary">0/10</span></h6><div class="alert alert-info mb-0"><i class="bi bi-info-circle me-2"></i> Aucun fichier téléchargé.</div>';
+        } else {
+            // Rebuild file list
+            const filesList = document.getElementById('filesList');
+            filesList.innerHTML = '';
+
+            fichiers.forEach(f => {
+                const sizeMB = (f.tailleFichier / (1024 * 1024)).toFixed(2);
+                const row = document.createElement('tr');
+                row.setAttribute('data-fichier-id', f.id);
+                row.innerHTML = '<td class="align-middle"><i class="bi bi-filetype-pdf text-danger me-2"></i><strong>' + f.nomFichier + '</strong></td>' +
+                               '<td class="text-muted small align-middle">' + sizeMB + ' MB</td>' +
+                               '<td class="text-muted small align-middle">' + f.dateUpload + '</td>' +
+                               '<td class="text-end align-middle"><a href="/demandes/${demande.id}/fichiers/' + f.id + '/download" class="btn btn-sm btn-outline-primary me-2"><i class="bi bi-download"></i></a>' +
+                               '<c:if test="${!isScanned}"><button class="btn btn-sm btn-outline-danger" onclick="deleteFile(' + f.id + ')"><i class="bi bi-trash"></i></button></c:if>' +
+                               '</td>';
+                filesList.appendChild(row);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Erreur lors du refresh:', error);
+    });
+}
+
 function markAsScanned(demandeId, pieceId) {
     fetch(`/demandes/${demandeId}/marquer-scannee?pieceId=${pieceId}`, {
         method: 'POST',

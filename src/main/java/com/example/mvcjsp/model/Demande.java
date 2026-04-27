@@ -35,6 +35,9 @@ public class Demande {
     @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DemandePiece> demandePieces;
 
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FichierDossier> fichiers;
+
     @Enumerated(EnumType.STRING)
     private DemandeStatus statut;
 
@@ -57,6 +60,8 @@ public class Demande {
     public void setDemandeOriginale(Demande demandeOriginale) { this.demandeOriginale = demandeOriginale; }
     public List<DemandePiece> getDemandePieces() { return demandePieces; }
     public void setDemandePieces(List<DemandePiece> demandePieces) { this.demandePieces = demandePieces; }
+    public List<FichierDossier> getFichiers() { return fichiers; }
+    public void setFichiers(List<FichierDossier> fichiers) { this.fichiers = fichiers; }
     public DemandeStatus getStatut() { return statut; }
     public void setStatut(DemandeStatus statut) { this.statut = statut; }
     public boolean isSansDonnees() { return sansDonnees; }

@@ -124,6 +124,21 @@ CREATE TABLE titre_sejour (
     date_expiration DATE
 );
 
+-- TABLE fichier_dossier
+CREATE TABLE fichier_dossier (
+    id SERIAL PRIMARY KEY,
+    demande_id INTEGER NOT NULL REFERENCES demande(id) ON DELETE CASCADE,
+    nom_fichier VARCHAR NOT NULL,
+    chemin_fichier VARCHAR NOT NULL,
+    taille_fichier BIGINT,
+    type_contenu VARCHAR,
+    date_upload TIMESTAMP NOT NULL,
+    date_modification TIMESTAMP,
+    utilisateur_upload VARCHAR
+);
+
+CREATE INDEX idx_fichier_demande ON fichier_dossier(demande_id);
+
 -- TABLE famille
 CREATE TABLE famille (
     id SERIAL PRIMARY KEY,
