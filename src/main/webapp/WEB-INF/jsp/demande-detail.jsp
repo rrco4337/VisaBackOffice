@@ -1,6 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -107,7 +106,7 @@
                             <strong>Profil :</strong> ${demande.typeProfil.libelle}
                         </div>
                         <div class="col-md-3">
-                            <strong>Date :</strong> <fmt:formatDate value="${demande.dateDemande}" pattern="dd/MM/yyyy HH:mm"/>
+                            <strong>Date :</strong> ${demande.dateDemande}
                         </div>
                     </div>
                 </div>
@@ -167,7 +166,7 @@
                                             <small class="text-muted">
                                                 <c:if test="${demandePiece.scanned}">
                                                     <i class="bi bi-check-circle-fill text-success me-1"></i>
-                                                    Scannée le <fmt:formatDate value="${demandePiece.dateScan}" pattern="dd/MM/yyyy HH:mm"/>
+                                                    Scannée le ${demandePiece.dateScan}
                                                 </c:if>
                                                 <c:if test="${!demandePiece.scanned}">
                                                     <i class="bi bi-circle text-muted me-1"></i>
