@@ -373,14 +373,23 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function markAsScanned(demandeId, pieceId) {
-    fetch(`/demandes/${demandeId}/marquer-scannee?pieceId=${pieceId}`, {
+    console.log('Marking as scanned - Demande:', demandeId, 'Piece:', pieceId);
+
+    fetch('/demandes/' + demandeId + '/marquer-scannee?pieceId=' + pieceId, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error('HTTP error, status = ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Data received:', data);
         if (data.success) {
             // Recharger la page pour afficher la mise à jour
             location.reload();
@@ -389,8 +398,8 @@ function markAsScanned(demandeId, pieceId) {
         }
     })
     .catch(error => {
-        console.error('Erreur:', error);
-        alert('Erreur lors de la communication avec le serveur');
+        console.error('Erreur complète:', error);
+        alert('Erreur lors de la communication avec le serveur: ' + error.message);
     });
 }
 </script>
