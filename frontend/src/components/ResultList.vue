@@ -4,11 +4,12 @@
     <div v-if="!items || items.length===0">Aucun résultat.</div>
     <table v-else>
       <thead>
-        <tr><th>Numéro demande</th><th>Statut</th><th>Date</th></tr>
+        <tr><th>Numéro demande</th><th>Type</th><th>Statut</th><th>Date</th></tr>
       </thead>
       <tbody>
         <tr v-for="it in items" :key="it.id">
           <td><a @click.prevent="$router.push(`/status/${it.id}`)" href="#">{{ it.id }}</a></td>
+          <td>{{ it.type }}</td>
           <td>{{ it.status }}</td>
           <td>{{ formatDate(it.date) }}</td>
         </tr>
