@@ -10,6 +10,7 @@ com\example\mvcjsp\model\enums\VisaTypeCode.class
 com\example\mvcjsp\repository\FichierDossierRepository.class
 com\example\mvcjsp\service\BusinessException.class
 com\example\mvcjsp\controller\DemandeApiController.class
+com\example\mvcjsp\dto\DemandeStatusResponse$DemandeurInfo.class
 com\example\mvcjsp\model\User.class
 com\example\mvcjsp\model\FichierDossier.class
 com\example\mvcjsp\repository\VisaRepository.class
