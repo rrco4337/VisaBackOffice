@@ -8,7 +8,7 @@
 -- =========================================================
 INSERT INTO type_visa (libelle, duree_validite_jours)
 VALUES ('VISA_TRANSFORMABLE', 90)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (libelle) DO NOTHING;
 
 -- =========================================================
 -- 2. TYPES DE DEMANDE
@@ -18,7 +18,7 @@ INSERT INTO type_demande (libelle, necessite_sans_donnees) VALUES
 ('DUPLICATA', true),
 ('TRANSFERT_VISA', true),
 ('TRANSFERT_VISA_CARTE_RESIDENT', true)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (libelle) DO NOTHING;
 
 -- =========================================================
 -- 3. TYPES DE PROFIL
@@ -27,7 +27,7 @@ INSERT INTO type_profil (libelle) VALUES
 ('ETUDIANT'),
 ('TRAVAILLEUR'),
 ('TOURISTE')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (libelle) DO NOTHING;
 
 -- =========================================================
 -- 4. NATIONALITÉS

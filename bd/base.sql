@@ -40,7 +40,7 @@ CREATE TABLE passeport (
 -- TABLE type_visa
 CREATE TABLE type_visa (
     id SERIAL PRIMARY KEY,
-    libelle VARCHAR,
+    libelle VARCHAR UNIQUE,
     duree_validite_jours INTEGER
 );
 
@@ -70,14 +70,14 @@ CREATE TABLE visa_historique (
 -- TABLE type_demande
 CREATE TABLE type_demande (
     id SERIAL PRIMARY KEY,
-    libelle VARCHAR,
+    libelle VARCHAR UNIQUE,
     necessite_sans_donnees BOOLEAN
 );
 
 -- TABLE type_profil
 CREATE TABLE type_profil (
     id SERIAL PRIMARY KEY,
-    libelle VARCHAR
+    libelle VARCHAR UNIQUE
 );
 
 -- TABLE demande
