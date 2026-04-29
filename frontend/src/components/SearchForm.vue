@@ -74,9 +74,11 @@ async function onSubmit() {
       return
     }
 
+    const baseUrl = `${window.location.origin}${window.location.pathname}`
     let textData = `Résultats pour: ${query.value}\n`
     items.forEach(it => {
-      textData += `\nDemande N°${it.id}\nType: ${it.type || 'Non spécifié'}\nStatut: ${it.status}\nDate: ${new Date(it.date).toLocaleDateString()}`
+      const detailUrl = `${baseUrl}#/status/${encodeURIComponent(it.id)}`
+      textData += `\nDemande N°${it.id}\nType: ${it.type || 'Non spécifié'}\nStatut: ${it.status}\nDate: ${new Date(it.date).toLocaleDateString()}\nURL: ${detailUrl}`
     })
 
     qrDataUrl.value = await QRCode.toDataURL(textData)
