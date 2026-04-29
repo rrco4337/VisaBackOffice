@@ -16,7 +16,7 @@
       <tbody>
         <tr v-for="it in items" :key="it.id">
           <td><a @click.prevent="$router.push(`/status/${it.id}`)" href="#">{{ it.id }}</a></td>
-          <td>{{ it.type || '—' }}</td>
+          <td>{{ it.type || '-' }}</td>
           <td>{{ it.status }}</td>
           <td>{{ formatDateTime(it.date) }}</td>
           <td>
@@ -24,8 +24,8 @@
             <small>{{ formatDemandeurMeta(it.demandeur) }}</small>
           </td>
           <td>
-            <div>{{ it.demandeur && it.demandeur.email ? it.demandeur.email : '—' }}</div>
-            <div>{{ it.demandeur && it.demandeur.telephone ? it.demandeur.telephone : '—' }}</div>
+            <div>{{ it.demandeur && it.demandeur.email ? it.demandeur.email : '-' }}</div>
+            <div>{{ it.demandeur && it.demandeur.telephone ? it.demandeur.telephone : '-' }}</div>
           </td>
         </tr>
       </tbody>
@@ -45,16 +45,16 @@ function formatDateOnly(s) {
 }
 
 function formatDemandeurName(demandeur) {
-  if (!demandeur) return '—'
+  if (!demandeur) return '-'
   const parts = [demandeur.prenom, demandeur.nom].filter(Boolean)
-  return parts.length ? parts.join(' ') : '—'
+  return parts.length ? parts.join(' ') : '-'
 }
 
 function formatDemandeurMeta(demandeur) {
-  if (!demandeur) return '—'
+  if (!demandeur) return '-'
   const parts = []
   if (demandeur.nationalite) parts.push(demandeur.nationalite)
   if (demandeur.dateNaissance) parts.push(formatDateOnly(demandeur.dateNaissance))
-  return parts.length ? parts.join(' • ') : '—'
+  return parts.length ? parts.join(' • ') : '-'
 }
 </script>

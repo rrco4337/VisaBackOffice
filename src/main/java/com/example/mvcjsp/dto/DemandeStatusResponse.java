@@ -12,13 +12,22 @@ public class DemandeStatusResponse {
     private final LocalDateTime date;
     private final String type;
     private final DemandeurInfo demandeur;
+    private final String passportNumber;
 
-    public DemandeStatusResponse(Long id, DemandeStatus status, LocalDateTime date, String type, DemandeurInfo demandeur) {
+    public DemandeStatusResponse(
+            Long id,
+            DemandeStatus status,
+            LocalDateTime date,
+            String type,
+            DemandeurInfo demandeur,
+            String passportNumber
+    ) {
         this.id = id;
         this.status = status;
         this.date = date;
         this.type = type;
         this.demandeur = demandeur;
+        this.passportNumber = passportNumber;
     }
 
     public static DemandeStatusResponse from(Demande demande) {
@@ -43,12 +52,18 @@ public class DemandeStatusResponse {
             type = demande.getTypeDemande().getLibelle().toString();
         }
 
+        String passportNumber = null;
+        if (demande.getVisa() != null && demande.getVisa().getPasseport() != null) {
+            passportNumber = demande.getVisa().getPasseport().getNumero();
+        }
+
         return new DemandeStatusResponse(
                 demande.getId(),
                 demande.getStatut(),
                 demande.getDateDemande(),
                 type,
-                demandeur
+                demandeur,
+                passportNumber
         );
     }
 
@@ -57,6 +72,7 @@ public class DemandeStatusResponse {
     public LocalDateTime getDate() { return date; }
     public String getType() { return type; }
     public DemandeurInfo getDemandeur() { return demandeur; }
+    public String getPassportNumber() { return passportNumber; }
 
     public static class DemandeurInfo {
         private final String nom;
