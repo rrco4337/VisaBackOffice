@@ -13,7 +13,22 @@
     <div v-if="qrDataUrl" class="qr" style="margin-top: 20px;">
       <h4>QR Code généré !</h4>
       <img :src="qrDataUrl" alt="QR Code" />
-      <p>Scannez-le pour voir les détails ou <router-link :to="'/results?q=' + encodeURIComponent(query)">cliquez ici pour voir les demandes</router-link></p>
+      <p>Scannez-le ou utilisez un lien direct vers le statut :</p>
+      <div class="qr-links">
+        <a
+          v-for="link in statusLinks"
+          :key="link.id"
+          :href="link.url"
+          class="qr-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Demande N°{{ link.id }}
+        </a>
+      </div>
+      <p>
+        Ou <router-link :to="'/results?q=' + encodeURIComponent(query)">cliquez ici pour voir les demandes</router-link>
+      </p>
     </div>
 
     <div v-if="error" class="error">{{ error }}</div>
@@ -29,10 +44,12 @@ const query = ref('')
 const qrDataUrl = ref('')
 const loading = ref(false)
 const error = ref(null)
+const statusLinks = ref([])
 
 async function onSubmit() {
   error.value = null
   qrDataUrl.value = ''
+  statusLinks.value = []
   loading.value = true
 
   if (!query.value) {
@@ -76,10 +93,13 @@ async function onSubmit() {
 
     const baseUrl = `${window.location.origin}${window.location.pathname}`
     let textData = `Résultats pour: ${query.value}\n`
+    const links = []
     items.forEach(it => {
       const detailUrl = `${baseUrl}#/status/${encodeURIComponent(it.id)}`
+      links.push({ id: it.id, url: detailUrl })
       textData += `\nDemande N°${it.id}\nType: ${it.type || 'Non spécifié'}\nStatut: ${it.status}\nDate: ${new Date(it.date).toLocaleDateString()}\nURL: ${detailUrl}`
     })
+    statusLinks.value = links
 
     qrDataUrl.value = await QRCode.toDataURL(textData)
   } catch (e) {

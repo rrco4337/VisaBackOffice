@@ -5,6 +5,8 @@
 -- VisaBackOffice - PostgreSQL
 -- =========================================================
 
+
+
 -- Désactiver les contraintes de clés étrangères temporairement
 ALTER TABLE demande_piece DISABLE TRIGGER ALL;
 ALTER TABLE demande DISABLE TRIGGER ALL;

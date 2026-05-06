@@ -577,9 +577,16 @@ a:hover {
   letter-spacing: 0.3px;
 }
 
-.qr a {
+.qr-links {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.qr .qr-link {
   display: inline-block;
-  margin-top: 2rem;
   padding: 1.35rem 2.5rem;
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   color: white;
@@ -593,11 +600,11 @@ a:hover {
   font-size: 15px;
 }
 
-.qr a::after {
+.qr .qr-link::after {
   display: none;
 }
 
-.qr a:hover {
+.qr .qr-link:hover {
   background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
   text-decoration: none;
   box-shadow: 0 16px 40px rgba(var(--primary-rgb), 0.45);
