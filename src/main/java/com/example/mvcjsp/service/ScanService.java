@@ -3,8 +3,10 @@ package com.example.mvcjsp.service;
 import com.example.mvcjsp.model.Demande;
 import com.example.mvcjsp.model.DemandePiece;
 import com.example.mvcjsp.model.enums.DemandeStatus;
+import com.example.mvcjsp.model.enums.FichierCategorie;
 import com.example.mvcjsp.repository.DemandeRepository;
 import com.example.mvcjsp.repository.DemandePieceRepository;
+import com.example.mvcjsp.repository.FichierDossierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,9 @@ public class ScanService {
 
     @Autowired
     private DemandePieceRepository demandePieceRepository;
+
+    @Autowired
+    private FichierDossierRepository fichierDossierRepository;
 
     /**
      * Mark a piece as scanned for a given demande
@@ -101,6 +106,15 @@ public class ScanService {
             throw new IllegalStateException(
                     String.format("Impossible de finaliser le scan. %d/%d pièces scannées.", scannedCount, totalCount)
             );
+        }
+
+        boolean photoOk = demande.isPhotoScanned()
+            || fichierDossierRepository.existsByDemandeIdAndCategorie(demandeId, FichierCategorie.PHOTO);
+        boolean signatureOk = demande.isSignatureScanned()
+            || fichierDossierRepository.existsByDemandeIdAndCategorie(demandeId, FichierCategorie.SIGNATURE);
+
+        if (!photoOk || !signatureOk) {
+            throw new IllegalStateException("Impossible de finaliser le scan. Photo et signature requises.");
         }
 
         demande.setStatut(DemandeStatus.SCANNE);

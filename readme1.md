@@ -52,3 +52,20 @@ misy visa transformable (afaka mijanona)
         ny demande misy type
 
         visa non transformable
+
+
+
+
+        sprint 5:
+        misy fiche ao @demandeur
+        misy etat: photo et signature temrnine
+        hatao possible ny maka sary @webcam
+        alaina sary ilay olona, dia asaina manao sonia
+        eo @trackpad
+        ratachena ao @demande an'ilay olona
+        misy sary sy sonia avy eo ny ao @ donnees
+
+        atao etape mihitsy, izany hoe mila termine ny sonia sy sary
+        hita hoe raha tsy misy sary sy sonia dia ny scan non termine foana
+
+        

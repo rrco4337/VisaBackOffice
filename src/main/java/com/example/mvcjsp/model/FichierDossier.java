@@ -1,5 +1,6 @@
 package com.example.mvcjsp.model;
 
+import com.example.mvcjsp.model.enums.FichierCategorie;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -30,6 +31,10 @@ public class FichierDossier {
     @Column(name = "type_contenu")
     private String typeContenu;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categorie")
+    private FichierCategorie categorie;
+
     @Column(name = "date_upload", nullable = false)
     private LocalDateTime dateUpload;
 
@@ -52,6 +57,8 @@ public class FichierDossier {
     public void setTailleFichier(Long tailleFichier) { this.tailleFichier = tailleFichier; }
     public String getTypeContenu() { return typeContenu; }
     public void setTypeContenu(String typeContenu) { this.typeContenu = typeContenu; }
+    public FichierCategorie getCategorie() { return categorie; }
+    public void setCategorie(FichierCategorie categorie) { this.categorie = categorie; }
     public LocalDateTime getDateUpload() { return dateUpload; }
     public void setDateUpload(LocalDateTime dateUpload) { this.dateUpload = dateUpload; }
     public LocalDateTime getDateModification() { return dateModification; }

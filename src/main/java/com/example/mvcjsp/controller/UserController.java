@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import com.example.mvcjsp.model.Demande;
 import com.example.mvcjsp.model.FichierDossier;
+import com.example.mvcjsp.model.enums.FichierCategorie;
 import com.example.mvcjsp.repository.DemandeRepository;
 
 import java.util.HashMap;
@@ -158,6 +159,23 @@ public class UserController {
         model.addAttribute("totalCount", scanService.getTotalPieceCount(id));
         model.addAttribute("allPiecesScanned", scanService.areAllPiecesScanned(id));
 
+        FichierDossier photo = fileUploadService.getCapture(id, FichierCategorie.PHOTO);
+        FichierDossier signature = fileUploadService.getCapture(id, FichierCategorie.SIGNATURE);
+
+        if (photo != null && !demande.isPhotoScanned()) {
+            demande.setPhotoScanned(true);
+            demandeRepository.save(demande);
+        }
+        if (signature != null && !demande.isSignatureScanned()) {
+            demande.setSignatureScanned(true);
+            demandeRepository.save(demande);
+        }
+
+        model.addAttribute("photoDone", demande.isPhotoScanned());
+        model.addAttribute("signatureDone", demande.isSignatureScanned());
+        model.addAttribute("photoFileId", photo != null ? photo.getId() : null);
+        model.addAttribute("signatureFileId", signature != null ? signature.getId() : null);
+
         return "demande-detail";
     }
 
@@ -199,6 +217,27 @@ public class UserController {
             redirectAttributes.addFlashAttribute("errors", List.of(e.getMessage()));
             return "redirect:/";
         }
+    }
+
+    @PostMapping("/demandes/{id}/finaliser-scan-ajax")
+    @ResponseBody
+    public Map<String, Object> finalizeScanningAjax(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            scanService.finalizeScanning(id);
+            response.put("success", true);
+            response.put("message", "Scan finalisé. Dossier verrouillé.");
+        } catch (IllegalStateException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Erreur lors de la finalisation: " + e.getMessage());
+        }
+        return response;
     }
 
     @PostMapping("/demandes/{id}/upload-fichier")
@@ -268,9 +307,12 @@ public class UserController {
             byte[] fileContent = fileUploadService.downloadFile(fichierDossierId);
             FichierDossier fichier = fileUploadService.getFileDetails(fichierDossierId);
 
+            String contentType = fichier.getTypeContenu() != null ? fichier.getTypeContenu() : MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            String dispositionType = contentType.startsWith("image/") ? "inline" : "attachment";
+
             return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fichier.getNomFichier() + "\"")
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, dispositionType + "; filename=\"" + fichier.getNomFichier() + "\"")
                     .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileContent.length))
                     .body(fileContent);
         } catch (Exception e) {
@@ -289,6 +331,72 @@ public class UserController {
             response.put("success", true);
             response.put("fileCount", fileCount);
             response.put("message", "Fichier supprimé avec succès");
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (IllegalStateException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Erreur lors de la suppression: " + e.getMessage());
+        }
+        return response;
+    }
+
+    @PostMapping("/demandes/{id}/upload-photo")
+    @ResponseBody
+    public Map<String, Object> uploadPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            FichierDossier fichier = fileUploadService.uploadCapture(id, file, FichierCategorie.PHOTO);
+            response.put("success", true);
+            response.put("fileId", fichier.getId());
+            response.put("message", "Photo enregistree avec succes");
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (IllegalStateException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Erreur lors de l'upload: " + e.getMessage());
+        }
+        return response;
+    }
+
+    @PostMapping("/demandes/{id}/upload-signature")
+    @ResponseBody
+    public Map<String, Object> uploadSignature(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            FichierDossier fichier = fileUploadService.uploadCapture(id, file, FichierCategorie.SIGNATURE);
+            response.put("success", true);
+            response.put("fileId", fichier.getId());
+            response.put("message", "Signature enregistree avec succes");
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (IllegalStateException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Erreur lors de l'upload: " + e.getMessage());
+        }
+        return response;
+    }
+
+    @DeleteMapping("/demandes/{id}/captures/{categorie}")
+    @ResponseBody
+    public Map<String, Object> deleteCapture(@PathVariable Long id, @PathVariable String categorie) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            FichierCategorie cat = FichierCategorie.valueOf(categorie.toUpperCase());
+            fileUploadService.deleteCapture(id, cat);
+            response.put("success", true);
+            response.put("message", "Capture supprimee avec succes");
         } catch (IllegalArgumentException e) {
             response.put("success", false);
             response.put("error", e.getMessage());

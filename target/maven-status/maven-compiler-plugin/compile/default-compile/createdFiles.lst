@@ -23,6 +23,7 @@ com\example\mvcjsp\dto\ValidationResult.class
 com\example\mvcjsp\model\enums\DemandeTypeCode.class
 com\example\mvcjsp\model\SituationFamiliale.class
 com\example\mvcjsp\service\ScanService.class
+com\example\mvcjsp\model\enums\FichierCategorie.class
 com\example\mvcjsp\repository\UserRepository.class
 com\example\mvcjsp\model\Visa.class
 com\example\mvcjsp\model\enums\DemandeStatus.class

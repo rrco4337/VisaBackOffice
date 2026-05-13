@@ -5,6 +5,7 @@ import com.example.mvcjsp.model.Demande;
 import com.example.mvcjsp.model.DemandePiece;
 import com.example.mvcjsp.model.FichierDossier;
 import com.example.mvcjsp.model.enums.DemandeStatus;
+import com.example.mvcjsp.model.enums.FichierCategorie;
 import com.example.mvcjsp.repository.DemandeRepository;
 import com.example.mvcjsp.repository.DemandePieceRepository;
 import com.example.mvcjsp.repository.FichierDossierRepository;
@@ -38,6 +39,8 @@ public class FileUploadService {
     private FileUploadConfig fileUploadConfig;
 
     private static final String PDF_MIME_TYPE = "application/pdf";
+    private static final String IMAGE_PNG_MIME_TYPE = "image/png";
+    private static final String IMAGE_JPEG_MIME_TYPE = "image/jpeg";
 
     /**
      * Upload a file for a specific piece of a demande
@@ -61,12 +64,11 @@ public class FileUploadService {
         }
 
         // Validate file
-        validateFile(file);
+        validatePdfFile(file);
 
         // Generate unique filename
         String originalFilename = file.getOriginalFilename();
-        String sanitizedName = sanitizeFilename(originalFilename);
-        String uniqueFilename = generateUniqueFilename(demandeId, sanitizedName);
+        String uniqueFilename = generateUniqueFilename(demandeId, "pdf");
 
         // Create date-based directory
         Path uploadDir = createDateBasedDirectory();
@@ -83,6 +85,7 @@ public class FileUploadService {
         FichierDossier fichier = new FichierDossier();
         fichier.setDemande(demande);
         fichier.setPiece(demandePiece.getPiece());
+        fichier.setCategorie(FichierCategorie.PIECE);
         fichier.setNomFichier(originalFilename);
         fichier.setCheminFichier(filePath.toString());
         fichier.setTailleFichier(file.getSize());
@@ -91,6 +94,80 @@ public class FileUploadService {
         fichier.setDateModification(LocalDateTime.now());
 
         return fichierDossierRepository.save(fichier);
+    }
+
+    /**
+     * Upload a capture (photo or signature) for a demande
+     */
+    public FichierDossier uploadCapture(Long demandeId, MultipartFile file, FichierCategorie categorie) {
+        if (categorie != FichierCategorie.PHOTO && categorie != FichierCategorie.SIGNATURE) {
+            throw new IllegalArgumentException("Categorie de capture invalide");
+        }
+
+        Demande demande = demandeRepository.findById(demandeId)
+                .orElseThrow(() -> new IllegalArgumentException("Dossier introuvable: " + demandeId));
+
+        if (demande.getStatut() == DemandeStatus.SCANNE) {
+            throw new IllegalStateException("Le dossier est verrouille. Les captures ne sont pas autorisees.");
+        }
+
+        validateImageFile(file);
+
+        if (categorie == FichierCategorie.SIGNATURE
+            && fichierDossierRepository.existsByDemandeIdAndCategorie(demandeId, categorie)) {
+            throw new IllegalStateException("La signature est deja enregistree");
+        }
+
+        if (categorie == FichierCategorie.PHOTO) {
+            fichierDossierRepository.findByDemandeIdAndCategorie(demandeId, categorie)
+                .ifPresent(existing -> deleteCaptureFile(existing));
+        }
+
+        String extension = contentTypeToExtension(file.getContentType());
+        String uniqueFilename = generateUniqueFilename(demandeId, extension);
+        Path uploadDir = createDateBasedDirectory();
+        Path filePath = uploadDir.resolve(uniqueFilename);
+
+        try {
+            Files.write(filePath, file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur lors de l'enregistrement du fichier: " + e.getMessage(), e);
+        }
+
+        FichierDossier fichier = new FichierDossier();
+        fichier.setDemande(demande);
+        fichier.setPiece(null);
+        fichier.setCategorie(categorie);
+        fichier.setNomFichier(buildCaptureName(categorie, extension));
+        fichier.setCheminFichier(filePath.toString());
+        fichier.setTailleFichier(file.getSize());
+        fichier.setTypeContenu(file.getContentType());
+        fichier.setDateUpload(LocalDateTime.now());
+        fichier.setDateModification(LocalDateTime.now());
+
+        FichierDossier saved = fichierDossierRepository.save(fichier);
+        updateCaptureStatus(demande, categorie, true);
+        return saved;
+    }
+
+    public void deleteCapture(Long demandeId, FichierCategorie categorie) {
+        if (categorie == FichierCategorie.SIGNATURE) {
+            throw new IllegalStateException("La signature ne peut pas etre supprimee");
+        }
+        FichierDossier fichier = fichierDossierRepository.findByDemandeIdAndCategorie(demandeId, categorie)
+                .orElseThrow(() -> new IllegalArgumentException("Capture introuvable"));
+
+        Demande demande = fichier.getDemande();
+        if (demande.getStatut() == DemandeStatus.SCANNE) {
+            throw new IllegalStateException("Le dossier est verrouille. La suppression n'est pas autorisee.");
+        }
+
+        deleteCaptureFile(fichier);
+        updateCaptureStatus(demande, categorie, false);
+    }
+
+    public FichierDossier getCapture(Long demandeId, FichierCategorie categorie) {
+        return fichierDossierRepository.findByDemandeIdAndCategorie(demandeId, categorie).orElse(null);
     }
 
     /**
@@ -157,7 +234,7 @@ public class FileUploadService {
     /**
      * Validate uploaded file
      */
-    private void validateFile(MultipartFile file) {
+    private void validatePdfFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Le fichier est vide");
         }
@@ -182,22 +259,62 @@ public class FileUploadService {
         }
     }
 
-    /**
-     * Sanitize filename to remove dangerous characters
-     */
-    private String sanitizeFilename(String filename) {
-        return filename
-                .replaceAll("[^a-zA-Z0-9._-]", "_")
-                .replaceAll("_+", "_")
-                .replaceAll("^_|_$", "");
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Le fichier est vide");
+        }
+
+        String contentType = file.getContentType();
+        if (!IMAGE_PNG_MIME_TYPE.equals(contentType) && !IMAGE_JPEG_MIME_TYPE.equals(contentType)) {
+            throw new IllegalArgumentException("Seules les images PNG/JPEG sont autorisees");
+        }
+
+        long maxSize = fileUploadConfig.getMaxFileSizeInBytes();
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException(
+                    String.format("La taille du fichier depasse la limite: %d bytes max", maxSize)
+            );
+        }
     }
 
     /**
      * Generate unique filename: demande-{id}-{uuid}.pdf
      */
-    private String generateUniqueFilename(Long demandeId, String originalFilename) {
+    private String generateUniqueFilename(Long demandeId, String extension) {
         String uuid = UUID.randomUUID().toString().substring(0, 8);
-        return String.format("demande-%d-%s.pdf", demandeId, uuid);
+        return String.format("demande-%d-%s.%s", demandeId, uuid, extension);
+    }
+
+    private String contentTypeToExtension(String contentType) {
+        if (IMAGE_PNG_MIME_TYPE.equals(contentType)) {
+            return "png";
+        }
+        if (IMAGE_JPEG_MIME_TYPE.equals(contentType)) {
+            return "jpg";
+        }
+        return "bin";
+    }
+
+    private String buildCaptureName(FichierCategorie categorie, String extension) {
+        return String.format("%s.%s", categorie.name().toLowerCase(), extension);
+    }
+
+    private void deleteCaptureFile(FichierDossier fichier) {
+        try {
+            Files.deleteIfExists(Paths.get(fichier.getCheminFichier()));
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur lors de la suppression du fichier: " + e.getMessage(), e);
+        }
+        fichierDossierRepository.delete(fichier);
+    }
+
+    private void updateCaptureStatus(Demande demande, FichierCategorie categorie, boolean done) {
+        if (categorie == FichierCategorie.PHOTO) {
+            demande.setPhotoScanned(done);
+        } else if (categorie == FichierCategorie.SIGNATURE) {
+            demande.setSignatureScanned(done);
+        }
+        demandeRepository.save(demande);
     }
 
     /**

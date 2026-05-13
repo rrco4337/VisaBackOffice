@@ -44,6 +44,12 @@ public class Demande {
     @Column(name = "sans_donnees")
     private boolean sansDonnees;
 
+    @Column(name = "photo_scanned")
+    private Boolean photoScanned;
+
+    @Column(name = "signature_scanned")
+    private Boolean signatureScanned;
+
     @Column(name = "date_demande")
     private LocalDateTime dateDemande;
 
@@ -66,6 +72,10 @@ public class Demande {
     public void setStatut(DemandeStatus statut) { this.statut = statut; }
     public boolean isSansDonnees() { return sansDonnees; }
     public void setSansDonnees(boolean sansDonnees) { this.sansDonnees = sansDonnees; }
+    public boolean isPhotoScanned() { return photoScanned != null && photoScanned; }
+    public void setPhotoScanned(boolean photoScanned) { this.photoScanned = photoScanned; }
+    public boolean isSignatureScanned() { return signatureScanned != null && signatureScanned; }
+    public void setSignatureScanned(boolean signatureScanned) { this.signatureScanned = signatureScanned; }
     public LocalDateTime getDateDemande() { return dateDemande; }
     public void setDateDemande(LocalDateTime dateDemande) { this.dateDemande = dateDemande; }
 }
